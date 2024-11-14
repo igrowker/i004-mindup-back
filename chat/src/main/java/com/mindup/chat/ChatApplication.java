@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class,
 		org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class})
 @EnableMongoRepositories
+//@EnableEurekaClient
 public class ChatApplication {
 
 	public static void main(String[] args) {
