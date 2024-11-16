@@ -1,39 +1,41 @@
 package com.mindup.core.services;
 
 import com.mindup.core.entities.User;
-import com.mindup.core.enums.Role;
-import com.mindup.core.exceptions.UserAlreadyExistsException;
-import com.mindup.core.exceptions.UserNotFoundException;
+import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.mindup.core.mappers.UserMapper;
+import com.mindup.core.dtos.*;
+import com.mindup.core.validations.PasswordValidation;
 import java.util.Optional;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 @Service
 public class UserService {
 
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private PasswordEncoder passwordEncoder;
+    private UserMapper userMapper;
 
-    public User registerUser(String name, String email, String password, Role role) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new UserAlreadyExistsException("The email " + email + " is already in use.");
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
+        if (userRepository.findByEmail(userRegisterDTO.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("The email " + userRegisterDTO.getEmail() + " is already in use.");
         }
 
-        User user = new User();
-        user.setName(name);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role);
-        return userRepository.save(user);
+        PasswordValidation.confirmPasswordsMatch(userRegisterDTO.getPassword(), userRegisterDTO.getConfirmPassword());
+        PasswordValidation.validatePassword(userRegisterDTO.getPassword());
+
+        User user = userMapper.toUser(userRegisterDTO);
+        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
+        userRepository.save(user);
+
+        return userMapper.toUserDTO(user);
     }
 
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Optional<UserDTO> findUserByEmail(String email) {
+        return userRepository.findByEmail(email).map(userMapper::toUserDTO);
     }
 
     public void changePassword(String email, String newPassword) {
@@ -48,5 +50,13 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
+    }
+
+    public void updateUser(UserDTO userDTO) {
+        User user = userRepository.findByEmail(userDTO.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + userDTO.getEmail()));
+
+        user.setPreferences(userDTO.getPreferences());
+        userRepository.save(user);
     }
 }
