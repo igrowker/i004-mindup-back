@@ -4,13 +4,13 @@ import com.mindup.core.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
 @Builder
+@Table(name = "appointments")
 public class AppointmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
