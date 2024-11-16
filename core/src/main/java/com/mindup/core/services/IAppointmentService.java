@@ -1,20 +1,16 @@
 package com.mindup.core.services;
 
-import com.mindup.core.entities.AppointmentEntity;
-import com.mindup.core.entities.User;
-import com.mindup.core.repositories.IAppointmentRepository;
+import com.mindup.core.dtos.Appointment.*;
 
-import java.net.http.HttpHeaders;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Set;
 
-public interface IAppointmentService{
-    Set<AppointmentEntity> getPatientReservedAppointments(User patient);
-    Set<AppointmentEntity> getPshychologistReservedAppointment(User psychologist);
-    AppointmentEntity add (User patient, User psychologist, LocalDateTime date);
-    AppointmentEntity update (Long appointmentId, User patient, User psychologist, LocalDateTime date);
-    Set<AppointmentEntity> getAppointmentsByPatient (User patient);
-    Set<AppointmentEntity> getAppointmentsByPsychologist (User psychologist);
-    void delete (Long appointmentId);
+
+public interface IAppointmentService {
+    Set<ResponseAppointmentDto> getPatientReservedAppointments(Long patientId);
+    Set<ResponseAppointmentDto> getPshychologistReservedAppointment(Long psychologistId);
+    ResponseAppointmentDto add(RequestCreateAppointmentDto requestDto);
+    ResponseAppointmentDto update(RequestUpdateAppointmentDto requestDto);
+    Set<ResponseAppointmentDto> getAppointmentsByPatient(Long patientId);
+    Set<ResponseAppointmentDto> getAppointmentsByPsychologist(Long psychologistId);
+    void delete(Long appointmentId);
 }
