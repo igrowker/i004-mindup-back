@@ -1,19 +1,20 @@
 package com.mindup.core.controllers;
 
 import com.mindup.core.services.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.mindup.core.dtos.*;
 import com.mindup.core.utils.EmailUtils;
-import lombok.AllArgsConstructor;
 import com.mindup.core.validations.*;
 
 @RestController
-@RequestMapping("/api")
-@AllArgsConstructor
+@RequestMapping("/api/core")
+@RequiredArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegisterDTO userRegisterDTO) {
@@ -23,14 +24,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody UserLoginDTO loginDTO) {
+    public ResponseEntity<ResponseLoginDto> loginUser(@RequestBody @Valid UserLoginDTO loginDTO) {
         UserValidation.validateLoginData(loginDTO);
-
-        if (userService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword())) {
-            return ResponseEntity.ok("Login successful");
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
+        var userLogged = userService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
+        return ResponseEntity.ok(userLogged);
     }
 
     @GetMapping("/user/profile")
