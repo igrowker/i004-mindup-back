@@ -1,36 +1,60 @@
+version: "3.8"
 
-# Etapa 1: Construcción de la aplicación con Maven
-FROM maven:3.8.7-openjdk-18-slim AS builder
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindup-backend
+    ports:
+      - "8761:8761"  # Puerto de Eureka
+      - "8080:8080"  # Puerto de Gateway
+      - "8081:8081"  # Puerto de Chat
+      - "8082:8082"  # Puerto de Core
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    networks:
+      - mindup-network
+    depends_on:
+      - mongo
+      - postgres
+    volumes:
+      - mindup-backend-data:/data
 
-WORKDIR /app
+  # MongoDB (Base de datos no relacional)
+  mongo:
+    image: mongo:latest
+    container_name: mindup-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - mindup-network
+    volumes:
+      - mindup-mongo-data:/data/db
 
-COPY pom.xml ./
-COPY eureka/pom.xml ./eureka/
-COPY gateway/pom.xml ./gateway/
-COPY chat/pom.xml ./chat/
-COPY core/pom.xml ./core/
+  # PostgreSQL (Base de datos relacional)
+  postgres:
+    image: postgres:latest
+    container_name: mindup-postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=mindupdb
+    ports:
+      - "5432:5432"
+    networks:
+      - mindup-network
+    volumes:
+      - mindup-postgres-data:/var/lib/postgresql/data
 
-RUN mvn dependency:go-offline
+networks:
+  mindup-network:
+    driver: bridge
 
-COPY src ./src
-
-RUN mvn clean package -DskipTests
-
-# Etapa 2: Preparación de la imagen de producción
-FROM openjdk:24-jdk-slim AS runner
-
-WORKDIR /app
-
-COPY --from=builder /app/target/*.jar app.jar
-
-EXPOSE 8080 
-
-# Limpieza de artefactos de construcción
-RUN rm -rf /app/src \
-    && rm -rf /root/.m2
-
-CMD ["java", "-jar", "app.jar"]
-
-
-#docker build -t springboot-docker crear imagen 
-#docker run -p 8080:8080 springboot-docker
+volumes:
+  mindup-mongo-data:
+    driver: local
+  mindup-postgres-data:
+    driver: local
+  mindup-backend-data:
+    driver: local

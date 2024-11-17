@@ -40,8 +40,5 @@ EXPOSE 8761 8080 8081 8082
 RUN rm -rf /root/.m2
 
 # Comando para iniciar todos los servicios en paralelo
-CMD java -jar eureka.jar & \
-    java -jar gateway.jar & \
-    java -jar chat.jar & \
-    java -jar core.jar & \
-    wait
+CMD ["sh", "-c", "java -jar eureka.jar & java -jar gateway.jar & java -jar chat.jar & java -jar core.jar & wait"]
+
