@@ -41,7 +41,8 @@ public class MessageController {
     //url ("/api/message/send") debido al request mapping
     @PostMapping("/send")
     public void sendMessage(@RequestBody Message message){
-        simpMessagingTemplate.convertAndSend("/topic/messages",message);
+        //if Front-end wants to recive the message, it will need to suscribe the user to ("/topic/messages")
+        simpMessagingTemplate.convertAndSend("/topic/messages",message);//sending messages to all subscribers. comments 
     }
 
 
