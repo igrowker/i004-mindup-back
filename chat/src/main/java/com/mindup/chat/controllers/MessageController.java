@@ -5,11 +5,10 @@ import com.mindup.chat.entities.Message;
 import com.mindup.chat.repositories.MessageRepository;
 import com.mindup.chat.services.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/message")
 public class MessageController {
-
+    private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageRepository messageRepository;
     private final MessageService messageService;
 
@@ -38,6 +37,12 @@ public class MessageController {
     public ResponseEntity<List<ResponseOtherResourcesDto>> otherResources() throws IOException {
         List<ResponseOtherResourcesDto> otherResources = messageService.getOtherResources();
         return ResponseEntity.ok(otherResources);
+    }
+
+    public MessageController(SimpMessagingTemplate simpMessagingTemplate,MessageRepository messageRepository, MessageService messageService){
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.messageRepository = messageRepository;
+        this.messageService = messageService;
     }
 }
 
