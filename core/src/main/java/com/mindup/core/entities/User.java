@@ -11,7 +11,6 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long userId;
     @Column(nullable = false)
     private String name;
@@ -26,4 +25,5 @@ public class User {
     private String preferences;
     @Column
     private String profile;
+    private boolean availability;
 }

@@ -1,39 +1,43 @@
 package com.mindup.core.services;
 
 import com.mindup.core.entities.User;
-import com.mindup.core.enums.Role;
-import com.mindup.core.exceptions.UserAlreadyExistsException;
-import com.mindup.core.exceptions.UserNotFoundException;
+import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.mindup.core.security.JwtService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.mindup.core.mappers.UserMapper;
+import com.mindup.core.dtos.*;
+import com.mindup.core.validations.PasswordValidation;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+    private final JwtService jwtService;
 
-    public User registerUser(String name, String email, String password, Role role) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new UserAlreadyExistsException("The email " + email + " is already in use.");
+    public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
+        if (userRepository.findByEmail(userRegisterDTO.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("The email " + userRegisterDTO.getEmail() + " is already in use.");
         }
 
-        User user = new User();
-        user.setName(name);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role);
-        return userRepository.save(user);
+        PasswordValidation.confirmPasswordsMatch(userRegisterDTO.getPassword(), userRegisterDTO.getConfirmPassword());
+        PasswordValidation.validatePassword(userRegisterDTO.getPassword());
+
+        User user = userMapper.toUser(userRegisterDTO);
+        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
+        userRepository.save(user);
+
+        return userMapper.toUserDTO(user);
     }
 
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Optional<UserDTO> findUserByEmail(String email) {
+        return userRepository.findByEmail(email).map(userMapper::toUserDTO);
     }
 
     public void changePassword(String email, String newPassword) {
@@ -44,9 +48,23 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public boolean authenticateUser(String email, String password) {
-        return userRepository.findByEmail(email)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElse(false);
+    public ResponseLoginDto authenticateUser(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
+        if (!isPasswordCorrect) {
+            throw new RuntimeException("Invalid mail or password");
+        }
+        String token = jwtService.generateToken(email);
+        ResponseLoginDto dto = new ResponseLoginDto(user.getUserId(), email, token);
+        return dto;
+    }
+
+    public void updateUser(UserDTO userDTO) {
+        User user = userRepository.findByEmail(userDTO.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + userDTO.getEmail()));
+
+        user.setPreferences(userDTO.getPreferences());
+        userRepository.save(user);
     }
 }
