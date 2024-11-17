@@ -3,21 +3,23 @@ package com.mindup.core.services;
 import com.mindup.core.entities.User;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
+import com.mindup.core.security.JwtService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.dtos.*;
 import com.mindup.core.validations.PasswordValidation;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+    private final JwtService jwtService;
 
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
         if (userRepository.findByEmail(userRegisterDTO.getEmail()).isPresent()) {
@@ -46,10 +48,16 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public boolean authenticateUser(String email, String password) {
-        return userRepository.findByEmail(email)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElse(false);
+    public ResponseLoginDto authenticateUser(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
+        if (!isPasswordCorrect) {
+            throw new RuntimeException("Invalid mail or password");
+        }
+        String token = jwtService.generateToken(email);
+        ResponseLoginDto dto = new ResponseLoginDto(user.getUserId(), email, token);
+        return dto;
     }
 
     public void updateUser(UserDTO userDTO) {
