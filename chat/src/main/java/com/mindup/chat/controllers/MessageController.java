@@ -38,12 +38,13 @@ public class MessageController {
         List<ResponseOtherResourcesDto> otherResources = messageService.getOtherResources();
         return ResponseEntity.ok(otherResources);
     }
-
-    public MessageController(SimpMessagingTemplate simpMessagingTemplate,MessageRepository messageRepository, MessageService messageService){
-        this.simpMessagingTemplate = simpMessagingTemplate;
-        this.messageRepository = messageRepository;
-        this.messageService = messageService;
+    //url ("/api/message/send") debido al request mapping
+    @PostMapping("/send")
+    public void sendMessage(@RequestBody Message message){
+        simpMessagingTemplate.convertAndSend("/topic/messages",message);
     }
+
+
 }
 
 
