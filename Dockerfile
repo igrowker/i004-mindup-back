@@ -2,6 +2,8 @@
 FROM maven:3.8.7-openjdk-18-slim AS builder
 
 WORKDIR /app
+# Montar el repositorio de Maven local en el contenedor para evitar múltiples descargas
+VOLUME ["/root/.m2"]
 
 # Copiar el archivo pom.xml y los poms de los módulos que quieres construir
 COPY pom.xml ./
@@ -32,6 +34,10 @@ COPY --from=builder /app/eureka/target/*.jar eureka.jar
 COPY --from=builder /app/gateway/target/*.jar gateway.jar
 COPY --from=builder /app/chat/target/*.jar chat.jar
 COPY --from=builder /app/core/target/*.jar core.jar
+
+# Copiar el archivo .env al contenedor
+COPY .env /app/.env
+
 
 # Exponer los puertos necesarios
 EXPOSE 8761 8080 8081 8082

@@ -1,27 +1,78 @@
 version: "3.8"
 
 services:
-  backend:
+  eureka:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mindup-backend
+    container_name: mindup-eureka
     ports:
-      - "8761:8761"  # Puerto de Eureka
-      - "8080:8080"  # Puerto de Gateway
-      - "8081:8081"  # Puerto de Chat
-      - "8082:8082"  # Puerto de Core
+      - "8761:8761"
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8761
+      - EUREKA_HOSTNAME=${EUREKA_HOSTNAME}
+    networks:
+      - mindup-network
+
+  chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindup-chat
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8088
+      - CHAT_HOSTNAME=${CHAT_HOSTNAME}
+      - MONGO_URI=${CHAT_MONGO_URI}
+      - MONGO_DB=${CHAT_MONGO_DB}
     networks:
       - mindup-network
     depends_on:
+      - eureka
       - mongo
-      - postgres
-    volumes:
-      - mindup-backend-data:/data
 
-  # MongoDB (Base de datos no relacional)
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindup-core
+    ports:
+      - "8089:8089"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8089
+      - CORE_HOSTNAME=${CORE_HOSTNAME}
+      - CORE_JWT_SECRET_KEY=${CORE_JWT_SECRET_KEY}
+      - CORE_BBDD_URL=${CORE_BBDD_URL}
+      - CORE_DB_USERNAME=${CORE_DB_USERNAME}
+      - CORE_DB_PASSWORD=${CORE_DB_PASSWORD}
+    networks:
+      - mindup-network
+    depends_on:
+      - eureka
+      - postgres
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindup-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8090
+      - GATEWAY_HOSTNAME=${GATEWAY_HOSTNAME}
+      - GATEWAY_JWT_SECRET_KEY=${GATEWAY_JWT_SECRET_KEY}
+      - GATEWAY_JWT_EXPIRATION=${GATEWAY_JWT_EXPIRATION}
+    networks:
+      - mindup-network
+    depends_on:
+      - eureka
+
   mongo:
     image: mongo:latest
     container_name: mindup-mongo
@@ -32,14 +83,14 @@ services:
     volumes:
       - mindup-mongo-data:/data/db
 
-  # PostgreSQL (Base de datos relacional)
   postgres:
     image: postgres:latest
     container_name: mindup-postgres
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=mindupdb
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/mindupdb
     ports:
       - "5432:5432"
     networks:
@@ -55,6 +106,4 @@ volumes:
   mindup-mongo-data:
     driver: local
   mindup-postgres-data:
-    driver: local
-  mindup-backend-data:
     driver: local
