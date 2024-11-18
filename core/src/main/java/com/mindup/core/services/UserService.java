@@ -25,14 +25,11 @@ public class UserService {
         if (userRepository.findByEmail(userRegisterDTO.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("The email " + userRegisterDTO.getEmail() + " is already in use.");
         }
-
-        PasswordValidation.confirmPasswordsMatch(userRegisterDTO.getPassword(), userRegisterDTO.getConfirmPassword());
         PasswordValidation.validatePassword(userRegisterDTO.getPassword());
-
         User user = userMapper.toUser(userRegisterDTO);
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
         userRepository.save(user);
-
+        
         return userMapper.toUserDTO(user);
     }
 
@@ -43,7 +40,6 @@ public class UserService {
     public void changePassword(String email, String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -63,7 +59,6 @@ public class UserService {
     public void updateUser(UserDTO userDTO) {
         User user = userRepository.findByEmail(userDTO.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + userDTO.getEmail()));
-
         user.setPreferences(userDTO.getPreferences());
         userRepository.save(user);
     }
