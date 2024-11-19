@@ -31,23 +31,26 @@ public class AppointmentController {
 
     private IAppointmentService iAppointmentService;
     
+
+    // Buscar por tipo de usuario con reservas aceptadas
     @GetMapping("/patient-reserved/{id}")
-    public ResponseEntity<Set<ResponseAppointmentDto>> getPatientReservedAppointments(@PathVariable Long id) {
+    public ResponseEntity<Set<ResponseAppointmentDto>> getPatientReservedAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getPatientReservedAppointments(id));
     }
 
     @GetMapping("/psychologist-reserved/{id}")
-    public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistReservedAppointments(@PathVariable Long id) {
+    public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistReservedAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getPshychologistReservedAppointment(id));
     }
 
+    // Buscar por usuario todas las reservas
     @GetMapping("/patient/{id}")
-    public ResponseEntity<Set<ResponseAppointmentDto>> getPatientAppointments(@PathVariable Long id) {
+    public ResponseEntity<Set<ResponseAppointmentDto>> getPatientAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPatient(id));
     }
 
     @GetMapping("/psychologist/{id}")
-    public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistAppointments(@PathVariable Long id) {
+    public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPsychologist(id));
     }
 
@@ -64,7 +67,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteAppointment(@PathVariable Long id) {
+    public ResponseEntity<?> deleteAppointment(@PathVariable String id) {
         iAppointmentService.delete(id);
         return ResponseEntity.noContent().build();
     }
