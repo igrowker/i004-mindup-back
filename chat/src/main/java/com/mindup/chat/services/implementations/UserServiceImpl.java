@@ -1,7 +1,8 @@
-package com.mindup.chat.services;
+package com.mindup.chat.services.implementations;
 
 import com.mindup.chat.entities.User;
 import com.mindup.chat.repositories.UserRepository;
+import com.mindup.chat.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

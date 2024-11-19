@@ -1,4 +1,4 @@
-package com.mindup.core.dtos;
+package com.mindup.core.dtos.User;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;

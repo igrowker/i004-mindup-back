@@ -1,7 +1,7 @@
-package com.mindup.core.dtos;
+package com.mindup.core.dtos.User;
 
 public record ResponseLoginDto(
-        Long id,
+        String id,
         String email,
         String token
 ) {
