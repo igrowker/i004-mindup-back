@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,Long> {
+public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,String> {
     // #################################################################################/*
     // by moment it will return an entity instead of dto, this going to be changed soon!!!/*
     // #################################################################################/*

@@ -25,13 +25,12 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class AppointmentServiceImpl implements IAppointmentService {
-    private IAppointmentRepository appointmentRepository;
-    private AppointmentMapper appointmentMapper;
-    private UserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
+    private final AppointmentMapper appointmentMapper;
+    private final UserRepository userRepository;
 
-    // changes incoming soon/*
     @Override
-    public Set<ResponseAppointmentDto> getPatientReservedAppointments(Long id) {
+    public Set<ResponseAppointmentDto> getPatientReservedAppointments(String id) {
         // Checking if patient exists
         User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
         
@@ -47,7 +46,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // changes incoming soon/*
     @Override   
-    public Set<ResponseAppointmentDto> getPshychologistReservedAppointment(Long id) {
+    public Set<ResponseAppointmentDto> getPshychologistReservedAppointment(String id) {
         // Checking if psychologist exists
         User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Psychologist not found"));
 
@@ -60,6 +59,28 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 return appointmentMapper.toResponseDtoSet(acceptedList);
             }
     // #######################################################################/*
+
+    @Override
+    public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
+        // Checking if patient exists
+        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+
+        if(patient.getRole() != Role.PATIENT) throw new IllegalArgumentException("Bad argument, user isn't a patient");
+
+        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
+        return appointmentMapper.toResponseDtoSet(appointments);
+    }
+
+    @Override
+    public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String id) {
+        // Checking if psycologist exists
+        User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+
+        if(psychologist.getRole() != Role.PSYCHOLOGIST) throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
+
+        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
+        return appointmentMapper.toResponseDtoSet(appointments);
+    }
 
     @Override
     public ResponseAppointmentDto add(RequestCreateAppointmentDto requestDto) {
@@ -107,29 +128,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPatient(Long id) {
-        // Checking if patient exists
-        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-
-        if(patient.getRole() != Role.PATIENT) throw new IllegalArgumentException("Bad argument, user isn't a patient");
-
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
-        return appointmentMapper.toResponseDtoSet(appointments);
-    }
-
-    @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(Long id) {
-        // Checking if psycologist exists
-        User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-
-        if(psychologist.getRole() != Role.PSYCHOLOGIST) throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
-
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
-        return appointmentMapper.toResponseDtoSet(appointments);
-    }
-
-    @Override
-    public void delete(Long appointmentId) {
+    public void delete(String appointmentId) {
         // Checking if appointment exist/*
         if(!appointmentRepository.existsById(appointmentId)) throw new IllegalArgumentException("appointment doesn't exist");
         appointmentRepository.deleteById(appointmentId);

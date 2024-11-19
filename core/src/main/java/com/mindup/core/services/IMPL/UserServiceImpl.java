@@ -1,14 +1,19 @@
-package com.mindup.core.services;
+package com.mindup.core.services.IMPL;
 
 import com.mindup.core.entities.User;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
+import com.mindup.core.services.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.dtos.*;
+import com.mindup.core.dtos.User.ResponseLoginDto;
+import com.mindup.core.dtos.User.UserDTO;
+import com.mindup.core.dtos.User.UserRegisterDTO;
 import com.mindup.core.validations.PasswordValidation;
 import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
