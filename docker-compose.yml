@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo-data:/data/db
+
+  postgresql:
+    image: postgres:15.2-alpine3.17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: postgres_mindup
+    ports:
+      - "5432:5432"
+
+volumes:
+  mongo-data:
