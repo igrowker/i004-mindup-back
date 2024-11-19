@@ -15,6 +15,7 @@ import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
 import com.mindup.core.services.IAppointmentService;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,10 +27,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/appointment")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AppointmentController {
 
-    private IAppointmentService iAppointmentService;
+    private final IAppointmentService iAppointmentService;
     
 
     // Buscar por tipo de usuario con reservas aceptadas
