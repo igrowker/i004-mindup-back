@@ -1,16 +1,17 @@
 package com.mindup.gateway.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
+@RequiredArgsConstructor
 public class GatewayConfig {
 
-    @Autowired
-    private CustomJwtAuthenticationFilter filter;
+    private final CustomJwtAuthenticationFilter filter;
 
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
@@ -21,9 +22,7 @@ public class GatewayConfig {
                 .route("core", r -> r.path("/api/core/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://core"))
-                /*.route("eureka", r -> r.path("/eureka/web")
-                        .filters(f -> f.filter(filter))
-                        .uri("http://localhost:8761"))*/
                 .build();
     }
+
 }

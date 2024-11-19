@@ -1,5 +1,6 @@
 package com.mindup.gateway.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -14,12 +15,11 @@ import reactor.core.publisher.Mono;
 
 @RefreshScope
 @Component
+@RequiredArgsConstructor
 public class CustomJwtAuthenticationFilter implements GatewayFilter {
 
-    @Autowired
-    private RouterValidator routerValidator;
-    @Autowired
-    private JwtService jwtService;
+    private final RouterValidator routerValidator;
+    private final JwtService jwtService;
 
     @Value("${jwt.prefix}")
     public String TOKEN_PREFIX;
