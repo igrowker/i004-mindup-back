@@ -11,12 +11,11 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,Long> {
+public interface IAppointmentRepository extends JpaRepository<AppointmentEntity, String> {
     // #################################################################################/*
-    // by moment it will return an entity instead of dto, this going to be changed soon!!!/*
+    // by the moment it will return an entity instead of dto, this going to be changed soon!!!/*
     // #################################################################################/*
     Set<AppointmentEntity> getAppointmentsByPatient (User patient);
     Set<AppointmentEntity> getAppointmentsByPsychologist (User psychologist);
     Optional<AppointmentEntity> findByDate(LocalDate appointmentDate);
-    Optional<AppointmentEntity> findByName (String name);
 }

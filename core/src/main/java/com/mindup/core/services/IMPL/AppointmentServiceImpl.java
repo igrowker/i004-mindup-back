@@ -31,7 +31,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // changes incoming soon/*
     @Override
-    public Set<ResponseAppointmentDto> getPatientReservedAppointments(Long id) {
+    public Set<ResponseAppointmentDto> getPatientReservedAppointments(String id) {
         // Checking if patient exists
         User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
         
@@ -47,7 +47,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     // changes incoming soon/*
     @Override   
-    public Set<ResponseAppointmentDto> getPshychologistReservedAppointment(Long id) {
+    public Set<ResponseAppointmentDto> getPshychologistReservedAppointment(String id) {
         // Checking if psychologist exists
         User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Psychologist not found"));
 
@@ -107,7 +107,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPatient(Long id) {
+    public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
         // Checking if patient exists
         User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
 
@@ -118,7 +118,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(Long id) {
+    public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String id) {
         // Checking if psycologist exists
         User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
 
@@ -129,7 +129,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public void delete(Long appointmentId) {
+    public void delete(String appointmentId) {
         // Checking if appointment exist/*
         if(!appointmentRepository.existsById(appointmentId)) throw new IllegalArgumentException("appointment doesn't exist");
         appointmentRepository.deleteById(appointmentId);

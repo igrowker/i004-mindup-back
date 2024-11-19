@@ -1,6 +1,7 @@
 package com.mindup.core.mappers;
 
-import com.mindup.core.dtos.*;
+import com.mindup.core.dtos.User.UserDTO;
+import com.mindup.core.dtos.User.UserRegisterDTO;
 import org.mapstruct.Mapper;
 import com.mindup.core.entities.User;
 
