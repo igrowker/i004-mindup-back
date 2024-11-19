@@ -6,10 +6,7 @@ import com.mindup.chat.repositories.MessageRepository;
 import com.mindup.chat.services.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,10 +19,10 @@ public class MessageController {
     private final MessageRepository messageRepository;
     private final MessageService messageService;
 
-    @PostMapping("/test")
-    public ResponseEntity<?> addAmount(){
-        messageRepository.save(new Message());
-        return ResponseEntity.ok(true);
+    @GetMapping("/chat-request/{patientId}")
+    public ResponseEntity<?> requestChat(@PathVariable String patientId) {
+        boolean response = messageService.requestChat(patientId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/emergency-contact")

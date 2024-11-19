@@ -1,12 +1,15 @@
 package com.mindup.core.controllers;
 
+import com.mindup.core.dtos.User.ResponseLoginDto;
+import com.mindup.core.dtos.User.UserDTO;
+import com.mindup.core.dtos.User.UserLoginDTO;
+import com.mindup.core.dtos.User.UserRegisterDTO;
 import com.mindup.core.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.mindup.core.dtos.User.*;
-
+import com.mindup.core.dtos.User*;
 
 @RestController
 @RequestMapping("/api/core")
