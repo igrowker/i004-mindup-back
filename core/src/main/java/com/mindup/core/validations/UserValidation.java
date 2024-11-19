@@ -1,5 +1,6 @@
 package com.mindup.core.validations;
 
+import com.mindup.core.dtos.*;
 import com.mindup.core.dtos.User.UserLoginDTO;
 import com.mindup.core.dtos.User.UserRegisterDTO;
 import com.mindup.core.utils.EmailUtils;

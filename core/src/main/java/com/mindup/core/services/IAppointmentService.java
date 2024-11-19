@@ -7,10 +7,10 @@ import java.util.Set;
 
 public interface IAppointmentService {
     Set<ResponseAppointmentDto> getPatientReservedAppointments(String patientId);
-    Set<ResponseAppointmentDto> getPshychologistReservedAppointment(String psychologistId); //Esa h. :P
-    ResponseAppointmentDto add(RequestCreateAppointmentDto requestDto);
-    ResponseAppointmentDto update(RequestUpdateAppointmentDto requestDto);
+    Set<ResponseAppointmentDto> getPshychologistReservedAppointment(String psychologistId);
     Set<ResponseAppointmentDto> getAppointmentsByPatient(String patientId);
     Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String psychologistId);
+    ResponseAppointmentDto add(RequestCreateAppointmentDto requestDto);
+    ResponseAppointmentDto update(RequestUpdateAppointmentDto requestDto);
     void delete(String appointmentId);
 }
