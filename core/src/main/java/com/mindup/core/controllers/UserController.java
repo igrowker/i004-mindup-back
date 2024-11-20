@@ -34,7 +34,6 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<ResponseLoginDto> loginUser (@RequestBody @Valid UserLoginDTO loginDTO) {
-        UserValidation.validateLoginData(loginDTO);
 
         ResponseLoginDto responseLoginDto = userService.authenticateUser (loginDTO.getEmail(), loginDTO.getPassword());
 
