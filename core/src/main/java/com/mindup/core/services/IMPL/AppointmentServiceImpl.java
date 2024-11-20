@@ -9,14 +9,8 @@ import com.mindup.core.mappers.AppointmentMapper;
 import com.mindup.core.repositories.IAppointmentRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.IAppointmentService;
-
 import lombok.AllArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.net.http.HttpHeaders;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -125,28 +119,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         AppointmentEntity updatedAppointment = appointmentRepository.save(updatedEntity);
         return appointmentMapper.toResponseDto(updatedAppointment);
-    }
-
-    @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
-        // Checking if patient exists
-        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-
-        if(patient.getRole() != Role.PATIENT) throw new IllegalArgumentException("Bad argument, user isn't a patient");
-
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
-        return appointmentMapper.toResponseDtoSet(appointments);
-    }
-
-    @Override
-    public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String id) {
-        // Checking if psycologist exists
-        User psychologist = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
-
-        if(psychologist.getRole() != Role.PSYCHOLOGIST) throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
-
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
-        return appointmentMapper.toResponseDtoSet(appointments);
     }
 
     @Override
