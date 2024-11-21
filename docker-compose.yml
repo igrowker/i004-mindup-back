@@ -9,9 +9,17 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
-      #MONGO_INITDB_DATABASE: db_mindup
     volumes:
       - mongo-data:/data/db
+
+  postgresql:
+    image: postgres:15.2-alpine3.17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: postgres_mindup
+    ports:
+      - "5432:5432"
 
 volumes:
   mongo-data:

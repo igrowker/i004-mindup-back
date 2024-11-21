@@ -8,8 +8,8 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends MongoRepository<Message, String> {
 
-    List<Message> findBySenderId(String senderId);
+    List<Message> findByPatientId(String senderId);
 
-    List<Message> findByReceiverId(String receiverId);
+    List<Message> findByProfessionalId(String receiverId);
 
 }

@@ -12,10 +12,4 @@ public class PasswordValidation {
             );
         }
     }
-
-    public static void confirmPasswordsMatch(String password, String confirmPassword) {
-        if (!password.equals(confirmPassword)) {
-            throw new IllegalArgumentException("Passwords do not match. Please ensure both passwords are identical.");
-        }
-    }
 }

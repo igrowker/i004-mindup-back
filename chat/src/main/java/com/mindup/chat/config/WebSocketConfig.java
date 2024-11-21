@@ -29,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
     //defining the exit channel
     @Bean
-    public MessageChannel clientOutboundChannel(){
+    public MessageChannel clientOutboundChannel2(){
         return new ExecutorSubscribableChannel();
     }
     //using bean because autowired gives problems in Junit, and this help to inject the dependency in controller;
