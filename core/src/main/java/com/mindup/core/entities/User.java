@@ -3,6 +3,7 @@ package com.mindup.core.entities;
 import com.mindup.core.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import java.time.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,4 +43,51 @@ public class User {
     @Column
     private String profile;
     private boolean availability;
+    
+    @Column
+    private String profileImageUrl;
+    
+    @Column
+    private LocalDate birthDate;
+    
+    @Transient
+    private int age;
+    
+    @Column
+    private String location;
+
+    @Column
+    private String gender;
+
+    @Column
+    private String matricula;
+    
+    @Column
+    private String specialty;
+    
+    @Column
+    private String aboutMe;
+
+    public int getAge() {
+        if (birthDate != null) {
+            return Period.between(birthDate, LocalDate.now()).getYears();
+        }
+        return 0;
+    }
+
+    public void setSpecialty(String specialty) {
+        if (this.role == Role.PSYCHOLOGIST) {
+            this.specialty = specialty;
+        } else {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set specialty.");
+        }
+    }
+
+    public void setMatricula(String matricula) {
+        if (this.role == Role.PSYCHOLOGIST) {
+            this.matricula = matricula;
+        } else {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set matricula.");
+        }
+    }
 }
