@@ -41,4 +41,12 @@ public class GlobalExceptionHandler {
         response.put("message", "An unexpected error occurred.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(ProfileImageValidationException.class)
+    public ResponseEntity<Map<String, String>> handleProfileImageValidationError(ProfileImageValidationException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Profile Image");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }
