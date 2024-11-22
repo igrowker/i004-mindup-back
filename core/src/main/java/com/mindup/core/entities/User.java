@@ -56,6 +56,8 @@ public class User {
     @Column
     private String location;
 
+    @NotNull(message = "Gender is required")
+    @Enumerated(EnumType.STRING)
     @Column
     private Gender gender;
 
