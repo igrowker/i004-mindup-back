@@ -1,9 +1,7 @@
 package com.mindup.core.services.IMPL;
 
-import com.mindup.core.dtos.User.ResponseLoginDto;
-import com.mindup.core.dtos.User.UserDTO;
-import com.mindup.core.dtos.User.UserRegisterDTO;
 import com.mindup.core.entities.EmailVerification;
+import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.User;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.EmailVerificationRepository;
@@ -15,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
-import com.mindup.core.validations.PasswordValidation;
+import com.mindup.core.validations.*;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-public class UserServiceImpl implements UserService { 
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -52,10 +50,9 @@ public class UserServiceImpl implements UserService {
         emailVerification.setVerificationToken(token);
         emailVerification.setVerified(false);
         emailVerificationRepository.save(emailVerification);
-
         emailVerificationService.sendVerificationEmail(user.getEmail(), token);
-
-        return userMapper.toUserDTO(user);
+        var user1 = userRepository.save(user);
+        return userMapper.toUserDTO(user1);
     }
 
     @Override
@@ -93,4 +90,32 @@ public class UserServiceImpl implements UserService {
         user.setPreferences(userDTO.getPreferences());
         userRepository.save(user);
     }
+
+    @Override
+    @Transactional
+    public void deleteUserAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+        userRepository.delete(user);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileImage(String email, ProfileImageDTO profileImageDTO) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+        ProfileImageValidation.validateProfileImageUrl(profileImageDTO.getProfileImageUrl());
+        user.setProfileImageUrl(profileImageDTO.getProfileImageUrl());
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProfileImage(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+        user.setProfileImageUrl(null);
+        userRepository.save(user);
+    }
+
 }

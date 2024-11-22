@@ -1,8 +1,6 @@
 package com.mindup.core.services;
 
-import com.mindup.core.dtos.User.ResponseLoginDto;
-import com.mindup.core.dtos.User.UserDTO;
-import com.mindup.core.dtos.User.UserRegisterDTO;
+import com.mindup.core.dtos.User.*;
 
 import java.util.Optional;
 
@@ -17,4 +15,10 @@ public interface UserService {
     ResponseLoginDto authenticateUser(String email, String password);
 
     void updateUser(UserDTO userDTO);
+
+    void deleteUserAccount(String email);
+    
+    void updateProfileImage(String email, ProfileImageDTO profileImageDTO);
+
+    void deleteProfileImage(String email);
 }

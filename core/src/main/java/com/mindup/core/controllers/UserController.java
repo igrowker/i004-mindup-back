@@ -1,5 +1,6 @@
 package com.mindup.core.controllers;
 
+import com.mindup.core.dtos.User.ProfileImageDTO;
 import com.mindup.core.dtos.User.ResponseLoginDto;
 import com.mindup.core.dtos.User.UserDTO;
 import com.mindup.core.dtos.User.UserLoginDTO;
@@ -9,7 +10,7 @@ import com.mindup.core.entities.User;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.EmailVerificationService;
 import com.mindup.core.services.UserService;
-import com.mindup.core.validations.UserValidation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -80,5 +81,28 @@ public class UserController {
                     return ResponseEntity.ok(user);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/user/logout")
+    public ResponseEntity<String> logoutUser(HttpServletRequest request) {
+        return ResponseEntity.ok("User logged out successfully.");
+    }
+
+    @DeleteMapping("/user/delete-account")
+    public ResponseEntity<String> deleteUserAccount(@RequestParam String email) {
+        userService.deleteUserAccount(email);
+        return ResponseEntity.ok("User account deleted successfully.");
+    }
+
+    @PostMapping("/user/update-profile-image")
+    public ResponseEntity<String> updateProfileImage(@RequestParam String email, @RequestBody @Valid ProfileImageDTO profileImageDTO) {
+        userService.updateProfileImage(email, profileImageDTO);
+        return ResponseEntity.ok("Profile image updated successfully.");
+    }
+
+    @DeleteMapping("/user/delete-profile-image")
+    public ResponseEntity<String> deleteProfileImage(@RequestParam String email) {
+        userService.deleteProfileImage(email);
+        return ResponseEntity.ok("Profile image deleted successfully.");
     }
 }
