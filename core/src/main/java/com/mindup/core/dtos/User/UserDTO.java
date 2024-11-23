@@ -13,4 +13,5 @@ public class UserDTO {
     private Role role;
     private String preferences;
     private String profile;
+    private Boolean availability;
 }

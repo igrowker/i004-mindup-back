@@ -21,4 +21,8 @@ public interface UserService {
     void updateProfileImage(String email, ProfileImageDTO profileImageDTO);
 
     void deleteProfileImage(String email);
+
+    UserDTO toggleAvailability(String id);
+
+
 }

@@ -105,4 +105,10 @@ public class UserController {
         userService.deleteProfileImage(email);
         return ResponseEntity.ok("Profile image deleted successfully.");
     }
+
+    @PutMapping("/user/availability/{id}")
+    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String id) {
+        UserDTO user = userService.toggleAvailability(id);
+        return ResponseEntity.ok(user);
+    }
 }
