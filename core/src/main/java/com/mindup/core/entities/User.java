@@ -61,8 +61,12 @@ public class User {
     @Column
     private Gender gender;
 
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format")
     @Column
-    private String matricula;
+    private String phone;
+
+    @Column
+    private String tuition;
 
     @Column
     private String specialty;
@@ -85,11 +89,11 @@ public class User {
         }
     }
 
-    public void setMatricula(String matricula) {
+    public void setTuition(String tuition) {
         if (this.role == Role.PSYCHOLOGIST) {
-            this.matricula = matricula;
+            this.tuition = tuition;
         } else {
-            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set matricula.");
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set tuition.");
         }
     }
 }
