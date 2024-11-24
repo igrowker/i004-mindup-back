@@ -18,7 +18,11 @@ public interface UserService {
 
     void deleteUserAccount(String email);
     
-    void updateProfileImage(String email, ProfileImageDTO profileImageDTO);
+    void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
-    void deleteProfileImage(String email);
+    void deleteProfileImage(String userId);
+
+    public void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
+
+    public UserProfileDTO getUserProfile(String userId);
 }
