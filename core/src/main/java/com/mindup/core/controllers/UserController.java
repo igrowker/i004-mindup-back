@@ -1,15 +1,12 @@
 package com.mindup.core.controllers;
 
-import com.mindup.core.dtos.User.ProfileImageDTO;
-import com.mindup.core.dtos.User.ResponseLoginDto;
-import com.mindup.core.dtos.User.UserDTO;
-import com.mindup.core.dtos.User.UserLoginDTO;
-import com.mindup.core.dtos.User.UserRegisterDTO;
+import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.entities.User;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.EmailVerificationService;
 import com.mindup.core.services.UserService;
+import com.mindup.core.validations.UserValidation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +31,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseLoginDto> loginUser (@RequestBody @Valid UserLoginDTO loginDTO) {
+    public ResponseEntity<ResponseLoginDto> loginUser(@RequestBody @Valid UserLoginDTO loginDTO) {
 
-        ResponseLoginDto responseLoginDto = userService.authenticateUser (loginDTO.getEmail(), loginDTO.getPassword());
+        ResponseLoginDto responseLoginDto = userService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
 
         if (responseLoginDto != null) {
             // Obtener el usuario autenticado
@@ -94,15 +91,32 @@ public class UserController {
         return ResponseEntity.ok("User account deleted successfully.");
     }
 
-    @PostMapping("/user/update-profile-image")
-    public ResponseEntity<String> updateProfileImage(@RequestParam String email, @RequestBody @Valid ProfileImageDTO profileImageDTO) {
-        userService.updateProfileImage(email, profileImageDTO);
+    @PostMapping("/user/{userId}/profile-image/update")
+    public ResponseEntity<String> updateProfileImage(
+            @PathVariable String userId,
+            @RequestBody @Valid ProfileImageDTO profileImageDTO) {
+        userService.updateProfileImage(userId, profileImageDTO);
         return ResponseEntity.ok("Profile image updated successfully.");
     }
 
-    @DeleteMapping("/user/delete-profile-image")
-    public ResponseEntity<String> deleteProfileImage(@RequestParam String email) {
-        userService.deleteProfileImage(email);
+    @DeleteMapping("/user/{userId}/profile-image")
+    public ResponseEntity<String> deleteProfileImage(@PathVariable String userId) {
+        userService.deleteProfileImage(userId);
         return ResponseEntity.ok("Profile image deleted successfully.");
+    }
+
+    @GetMapping("/user/{userId}/profile")
+    public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
+        UserProfileDTO userProfile = userService.getUserProfile(userId);
+        return ResponseEntity.ok(userProfile);
+    }
+
+    @PutMapping("/user/{userId}/profile")
+    public ResponseEntity<Void> updateUserProfile(
+            @PathVariable String userId,
+            @Valid @RequestBody UserProfileDTO userProfileDTO) {
+        UserValidation.validateUserProfile(userProfileDTO);
+        userService.updateUserProfile(userId, userProfileDTO);
+        return ResponseEntity.ok().build();
     }
 }
