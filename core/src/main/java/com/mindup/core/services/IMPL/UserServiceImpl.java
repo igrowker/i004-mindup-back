@@ -52,7 +52,6 @@ public class UserServiceImpl implements UserService {
         emailVerification.setUser(user);
         emailVerification.setVerificationToken(token);
         emailVerification.setVerified(false);
-        //emailVerificationRepository.save(emailVerification);
         emailVerificationService.sendVerificationEmail(user.getEmail(), token);
 
         return userMapper.toUserDTO(user);
