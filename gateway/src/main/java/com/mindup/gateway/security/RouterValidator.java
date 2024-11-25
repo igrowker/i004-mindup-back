@@ -9,7 +9,10 @@ import java.util.List;
 
         public static final List<String> openApiEndpoints = List.of(
                 "/api/core/register",
-                "/api/core/login"
+                "/api/core/login",
+                "/api/core/verify",
+                "/api/core/requestPwReset",
+                "/api/core/resetPW"
         );
 
         public boolean isSecured(ServerHttpRequest serverHttpRequest) {
