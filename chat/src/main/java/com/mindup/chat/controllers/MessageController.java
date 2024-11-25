@@ -1,21 +1,23 @@
 package com.mindup.chat.controllers;
+
 import com.mindup.chat.dtos.ResponseEmergencyDto;
 import com.mindup.chat.dtos.ResponseOtherResourcesDto;
+import com.mindup.chat.dtos.TemporalChatIdDto;
 import com.mindup.chat.entities.Message;
-import com.mindup.chat.entities.TemporalChat;
-import com.mindup.chat.repositories.MessageRepository;
-import com.mindup.chat.repositories.TemporalChatRepository;
+import com.mindup.chat.services.AvailablePsychologistsService;
 import com.mindup.chat.services.MessageService;
-import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Queue;
 
@@ -23,9 +25,11 @@ import java.util.Queue;
 @RestController
 @RequestMapping("/api/message")
 public class MessageController {
-    private final SimpMessagingTemplate simpMessagingTemplate;
+    
+    private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
     private final Queue<String> professionalQueue = new LinkedList<>();
+    private final AvailablePsychologistsService availablePsychologistsService;
 
 
     @PostMapping("/join/{professionalId}")
@@ -33,36 +37,31 @@ public class MessageController {
         messageService.joinProfessional(professionalId);
         return ResponseEntity.ok().build();//devolxer id de ws, sino es el mismo que usuario
     }
-/*
-    @MessageMapping("/send")
-    public void sendMessage(@Payload MessageDTO message) {
-        String nextUser2 = user2Queue.poll(); // Toma al siguiente usuario tipo 2.
+    
 
-        if (nextUser2 != null) {
-            simpMessagingTemplate.convertAndSendToUser(nextUser2, "/queue/messages", message);
-            user2Queue.add(nextUser2); // Lo regresa al final de la cola.
-        } else {
-            simpMessagingTemplate.convertAndSend("/queue/errors", "No hay usuarios disponibles.");
-        }
+    @MessageMapping("/broadcast")
+    @SendTo("/topic/reply")
+    public String broadcastMessage(@Payload String message) {
+        return LocalDateTime.now() + " - " + "You have received a message: " + message;
     }
 
-    @MessageMapping("/create-room")
-    public void createRoom(@Payload RoomDTO roomDTO) {
-        String roomTopic = "/topic/room/" + roomDTO.roomId();
-        simpMessagingTemplate.convertAndSend(roomTopic, "Sala creada entre " + roomDTO.user1() + " y " + roomDTO.user2());
+    @MessageMapping("/user-message-{userName}")
+    public void sendToOtherUser(@Payload String message, @DestinationVariable String userName, @Header("simpSessionId") String sessionId) {
+        messagingTemplate.convertAndSend("/queue/reply-" + userName, "You have a message from someone: " + message);
     }
 
-    @PostMapping("/send")
-    public void sendMessage(@RequestBody Message message) {
-        if (!user2Queue.isEmpty()) {
-            String nextUser2 = user2Queue.peek(); // Obtiene el siguiente usuario sin removerlo.
-            simpMessagingTemplate.convertAndSendToUser(nextUser2, "/queue/messages", message);
-        } else {
-            simpMessagingTemplate.convertAndSend("/queue/errors", "No hay usuarios disponibles para recibir el mensaje.");
-        }
+    @PostMapping("/subscribe-professional/{id}")
+    public ResponseEntity<Boolean> subscribeProfessional(@PathVariable String id) throws IOException {
+        Boolean response = availablePsychologistsService.subscribeProfessional(id);
+        return ResponseEntity.ok(response);
     }
 
-*/
+    @GetMapping("/find-professional")
+    public ResponseEntity<TemporalChatIdDto> findFirstProfessional() {
+        TemporalChatIdDto temporalChatIdDto = availablePsychologistsService.findFirstProfessional();
+        return ResponseEntity.ok(temporalChatIdDto);
+    }
+
 
     @GetMapping("/emergency-contact")
     public ResponseEntity<List<ResponseEmergencyDto>> emergencyContact() throws IOException {
@@ -75,13 +74,17 @@ public class MessageController {
         List<ResponseOtherResourcesDto> otherResources = messageService.getOtherResources();
         return ResponseEntity.ok(otherResources);
     }
-    //url ("/api/message/send") debido al request mapping
-    @PostMapping("/send")
-    public void sendMessage(@RequestBody Message message){
-        //if Front-end wants to recive the message, it will need to suscribe the user to ("/topic/messages")
-        simpMessagingTemplate.convertAndSend("/topic/messages",message);//sending messages to all subscribers. comments 
+    
+    @PostMapping("/professional-accepted")
+    public ResponseEntity<Boolean> professionalAccepted(@RequestBody @Valid TemporalChatIdDto temporalChatIdDto){
+        var flag=messageService.professionalAccepted(temporalChatIdDto);
+        return ResponseEntity.ok(flag);
     }
 
-
+    @GetMapping
+            ("/request-chat/{patientId}")
+    public ResponseEntity<?> requestChat(@PathVariable String patientId){
+        TemporalChatIdDto temporalChatIdDto=messageService.requestChat(patientId);
+        return ResponseEntity.ok(temporalChatIdDto);
+    }
 }
-

@@ -2,14 +2,17 @@ package com.mindup.chat.services.implementations;
 
 import com.mindup.chat.dtos.ResponseEmergencyDto;
 import com.mindup.chat.dtos.ResponseOtherResourcesDto;
-import com.mindup.chat.entities.Message;
+import com.mindup.chat.dtos.TemporalChatIdDto;
 import com.mindup.chat.entities.TemporalChat;
+import com.mindup.chat.exceptions.ResourceNotFoundException;
+import com.mindup.chat.feign.CoreFeignClient;
+import com.mindup.chat.mappers.TemporalChatMapper;
+import com.mindup.chat.repositories.AvailablePsychologistsRepository;
 import com.mindup.chat.repositories.TemporalChatRepository;
 import com.mindup.chat.services.MessageService;
 import com.mindup.chat.utils.Scraper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,9 @@ public class MessageServiceImpl implements MessageService {
     private final TemporalChatRepository temporalChatRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Queue<String> professionalQueue = new LinkedList<>();
+    private final AvailablePsychologistsRepository availablePsychologistsRepository;
+    private final TemporalChatMapper temporalChatMapper;
+    private final CoreFeignClient coreFeignClient;
 
 
     @Override
@@ -34,34 +40,29 @@ public class MessageServiceImpl implements MessageService {
         professionalQueue.add(professionalId);
         simpMessagingTemplate.convertAndSendToUser(professionalId, "/queue/notifications", "Ahora estas disponible para la asistencia por chat.");
     }
-/*
-    @Override
-    public void sendMessage(MessageDTO message) {
-
-    }
 
     @Override
-    public void createRoom(RoomDTO roomDTO) {
-
-    }*/
-
-    @Override
-    public void sendMessage(Message message) {
-
+    public Boolean professionalAccepted(TemporalChatIdDto temporalChatIdDto) {
+        //todo. corroborar con userDB feignclient
+        coreFeignClient.findProfessionalById(temporalChatIdDto.professionalId());
+        //GUILLEEEEEE NOS QUEDAMOS ACAAAAAA
+        //availablePsychologistsRepository.delete(availablePsychologist);
+        return true;
     }
 
     @Transactional
     @Override
-    public boolean requestChat(String patientId) {
-        TemporalChat temporalChat = new TemporalChat();
+    public TemporalChatIdDto requestChat(String patientId) {
+        TemporalChat temporalChat = new TemporalChat(); //validar id de patient
         temporalChat.setPatientId(patientId);
-        try {
-            temporalChatRepository.save(temporalChat);
-            return true;
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return false;
-        }
+
+        var professionalId = availablePsychologistsRepository.findAll().get(0);
+        temporalChat.setProfessionalId(professionalId.getProfessionalId());
+        TemporalChat temporalChat1=temporalChatRepository.save(temporalChat);
+        TemporalChatIdDto temporalChatIdDto=temporalChatMapper.toTemporalChatDto(temporalChat1);
+        temporalChat1.setProfessionalId(null);
+        temporalChatRepository.save(temporalChat1);
+        return temporalChatIdDto;
     }
 
     @Override

@@ -21,7 +21,6 @@ public class Message {
     private String patientId;
     private String professionalId;
     private String sender;
-    // Si las ids de WS no pueden igualarse a las de patient y professional de la db, deben agregarse acá.
 
     @Size(max = 1000)
     private String content;
