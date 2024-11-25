@@ -20,6 +20,8 @@ public interface UserService {
     
     void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
+    UserDTO toggleAvailability(String id);
+
     void deleteProfileImage(String userId);
 
     public void updateUserProfile(String userId, UserProfileDTO userProfileDTO);

@@ -5,6 +5,7 @@ import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.*;
 import com.mindup.core.exceptions.*;
+import com.mindup.core.feign.ChatFeignClient;
 import com.mindup.core.repositories.EmailVerificationRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final ChatFeignClient chatFeignClient;
 
     @Override
     @Transactional
@@ -123,6 +125,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public UserDTO toggleAvailability(String id) {
+            User user = userRepository.findById(id).orElseThrow(() ->
+                    new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+            user.setAvailability(!user.getAvailability());
+            var savedUser = userRepository.save(user);
+            if (user.getAvailability()){ chatFeignClient.subscribeProfessional(id); }
+            var response = userMapper.toUserDTO(savedUser);
+            return response;
+    }
+
     @Transactional
     public UserProfileDTO getUserProfile(String userId) {
         User user = userRepository.findById(userId)

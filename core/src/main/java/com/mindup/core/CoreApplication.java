@@ -6,8 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
+@EnableFeignClients
 public class CoreApplication {
 
     public static void main(String[] args) {

@@ -42,8 +42,9 @@ public class User {
 
     @Column
     private String profile;
-    private boolean availability;
-
+  
+    private Boolean availability;
+  
     @Column
     private String profileImageUrl;
 

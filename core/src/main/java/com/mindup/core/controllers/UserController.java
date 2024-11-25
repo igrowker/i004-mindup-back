@@ -105,6 +105,11 @@ public class UserController {
         return ResponseEntity.ok("Profile image deleted successfully.");
     }
 
+    @PutMapping("/user/availability/{id}")
+    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String id) {
+        UserDTO user = userService.toggleAvailability(id);
+        return ResponseEntity.ok(user);
+  
     @GetMapping("/user/{userId}/profile")
     public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
         UserProfileDTO userProfile = userService.getUserProfile(userId);
