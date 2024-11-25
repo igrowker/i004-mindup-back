@@ -6,7 +6,6 @@ import com.mindup.core.entities.User;
 import com.mindup.core.enums.*;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.feign.ChatFeignClient;
-import com.mindup.core.repositories.EmailVerificationRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
 import com.mindup.core.services.EmailVerificationService;
@@ -30,7 +29,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
-    private final EmailVerificationRepository emailVerificationRepository;
     private final ChatFeignClient chatFeignClient;
 
     @Override
@@ -47,15 +45,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
-
         EmailVerification emailVerification = new EmailVerification();
         emailVerification.setUser(user);
         emailVerification.setVerificationToken(token);
-        emailVerification.setVerified(false);
-        emailVerificationRepository.save(emailVerification);
+        emailVerification.setVerified(true);
         emailVerificationService.sendVerificationEmail(user.getEmail(), token);
-        var user1 = userRepository.save(user);
-        return userMapper.toUserDTO(user1);
+        return userMapper.toUserDTO(user);
     }
 
     @Override
