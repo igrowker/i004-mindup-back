@@ -27,4 +27,8 @@ public interface UserService {
     public void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
 
     public UserProfileDTO getUserProfile(String userId);
+
+    void requestPasswordReset(String email);
+
+    void resetPassword(String token, String newPassword);
 }
