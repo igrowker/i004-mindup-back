@@ -2,6 +2,9 @@ package com.mindup.core.validations;
 
 import com.mindup.core.exceptions.ProfileImageValidationException;
 import org.apache.commons.validator.routines.UrlValidator;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class ProfileImageValidation {
 
@@ -27,7 +30,31 @@ public class ProfileImageValidation {
         }
 
         if (!hasValidExtension) {
-            throw new ProfileImageValidationException("Profile image URL must point to a valid image format: " + profileImageUrl);
+            throw new ProfileImageValidationException(
+                    "Profile image URL must point to a valid image format: " + profileImageUrl);
+        }
+
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(profileImageUrl).openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+
+            int responseCode = connection.getResponseCode();
+            String contentType = connection.getContentType();
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new ProfileImageValidationException(
+                        "Profile image URL is not accessible. Response code: " + responseCode);
+            }
+
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new ProfileImageValidationException(
+                        "The URL does not point to an image. Content type: " + contentType);
+            }
+
+        } catch (IOException e) {
+            throw new ProfileImageValidationException("Unable to connect to the profile image URL: " + profileImageUrl);
         }
     }
 }

@@ -18,11 +18,13 @@ public interface UserService {
 
     void deleteUserAccount(String email);
     
-    void updateProfileImage(String email, ProfileImageDTO profileImageDTO);
-
-    void deleteProfileImage(String email);
+    void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
     UserDTO toggleAvailability(String id);
 
+    void deleteProfileImage(String userId);
 
+    public void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
+
+    public UserProfileDTO getUserProfile(String userId);
 }

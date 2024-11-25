@@ -1,8 +1,8 @@
 package com.mindup.core.validations;
 
-import com.mindup.core.dtos.User.UserLoginDTO;
-import com.mindup.core.dtos.User.UserRegisterDTO;
+import com.mindup.core.dtos.User.*;
 import com.mindup.core.utils.EmailUtils;
+import java.util.regex.Pattern;
 
 public class UserValidation {
 
@@ -35,6 +35,16 @@ public class UserValidation {
 
         if (userRegisterDTO.getRole() == null) {
             throw new IllegalArgumentException("Role cannot be null");
+        }
+    }
+
+    private static final String PHONE_PATTERN = "^\\+?[1-9]\\d{1,14}$";
+
+    public static void validateUserProfile(UserProfileDTO userProfileDTO) {
+        if (userProfileDTO.getPhone() != null && !userProfileDTO.getPhone().isEmpty()) {
+            if (!Pattern.matches(PHONE_PATTERN, userProfileDTO.getPhone())) {
+                throw new IllegalArgumentException("Invalid phone number format");
+            }
         }
     }
 }

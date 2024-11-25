@@ -1,6 +1,6 @@
 package com.mindup.core.entities;
 
-import com.mindup.core.enums.Role;
+import com.mindup.core.enums.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.*;
@@ -18,53 +18,60 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
-    
+
     @NotBlank(message = "Name is required")
     @Column(nullable = false)
     private String name;
-    
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     @Column(nullable = false, unique = true)
     private String email;
-    
+
     @NotBlank(message = "Password is required")
     @Column(nullable = false)
     private String password;
-    
+
     @NotNull(message = "Role is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-    
+
     @Column
     private String preferences;
-    
+
     @Column
     private String profile;
+  
     private Boolean availability;
-    
+  
     @Column
     private String profileImageUrl;
-    
+
     @Column
     private LocalDate birthDate;
-    
+
     @Transient
     private int age;
-    
+
     @Column
     private String location;
 
+    @NotNull(message = "Gender is required")
+    @Enumerated(EnumType.STRING)
     @Column
-    private String gender;
+    private Gender gender;
+
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format")
+    @Column
+    private String phone;
 
     @Column
-    private String matricula; //TODO. Pasar a inglés. License es una buena opción.
-    
+    private String tuition;
+
     @Column
     private String specialty;
-    
+
     @Column
     private String aboutMe;
 
@@ -83,11 +90,11 @@ public class User {
         }
     }
 
-    public void setMatricula(String matricula) {
+    public void setTuition(String tuition) {
         if (this.role == Role.PSYCHOLOGIST) {
-            this.matricula = matricula;
+            this.tuition = tuition;
         } else {
-            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set matricula.");
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set tuition.");
         }
     }
 }

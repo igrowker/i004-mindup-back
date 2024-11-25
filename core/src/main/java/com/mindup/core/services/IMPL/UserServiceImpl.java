@@ -3,6 +3,7 @@ package com.mindup.core.services.IMPL;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.User;
+import com.mindup.core.enums.*;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.feign.ChatFeignClient;
 import com.mindup.core.repositories.EmailVerificationRepository;
@@ -41,14 +42,14 @@ public class UserServiceImpl implements UserService {
 
         PasswordValidation.validatePassword(userRegisterDTO.getPassword());
 
-        User user = userMapper.toUser (userRegisterDTO);
+        User user = userMapper.toUser(userRegisterDTO);
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
 
         EmailVerification emailVerification = new EmailVerification();
-        emailVerification.setUser (user);
+        emailVerification.setUser(user);
         emailVerification.setVerificationToken(token);
         emailVerification.setVerified(false);
         emailVerificationRepository.save(emailVerification);
@@ -103,24 +104,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateProfileImage(String email, ProfileImageDTO profileImageDTO) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    public void updateProfileImage(String userId, ProfileImageDTO profileImageDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
         ProfileImageValidation.validateProfileImageUrl(profileImageDTO.getProfileImageUrl());
+
         user.setProfileImageUrl(profileImageDTO.getProfileImageUrl());
         userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public void deleteProfileImage(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    public void deleteProfileImage(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
         user.setProfileImageUrl(null);
         userRepository.save(user);
     }
 
     @Override
+    @Transactional
     public UserDTO toggleAvailability(String id) {
             User user = userRepository.findById(id).orElseThrow(() ->
                     new IllegalArgumentException("Usuario no encontrado con ID: " + id));
@@ -131,4 +136,42 @@ public class UserServiceImpl implements UserService {
             return response;
     }
 
+    @Transactional
+    public UserProfileDTO getUserProfile(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        return userMapper.toUserProfileDTO(user);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserProfile(String userId, UserProfileDTO userProfileDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        if (userProfileDTO.getName() != null) {
+            user.setName(userProfileDTO.getName());
+        }
+        if (userProfileDTO.getBirthDate() != null) {
+            user.setBirthDate(userProfileDTO.getBirthDate());
+        }
+        if (userProfileDTO.getGender() != null) {
+            user.setGender(userProfileDTO.getGender());
+        }
+        if (userProfileDTO.getPhone() != null) {
+            UserValidation.validateUserProfile(userProfileDTO);
+            user.setPhone(userProfileDTO.getPhone());
+        }
+        if (user.getRole() == Role.PSYCHOLOGIST) {
+            if (userProfileDTO.getTuition() != null) {
+                user.setTuition(userProfileDTO.getTuition());
+            }
+            if (userProfileDTO.getSpecialty() != null) {
+                user.setSpecialty(userProfileDTO.getSpecialty());
+            }
+        }
+        if (userProfileDTO.getAboutMe() != null) {
+            user.setAboutMe(userProfileDTO.getAboutMe());
+        }
+        userRepository.save(user);
+    }
 }
