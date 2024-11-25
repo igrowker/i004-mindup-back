@@ -4,6 +4,8 @@ package com.mindup.core.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "email_verifications")
@@ -22,5 +24,7 @@ public class EmailVerification {
 
     @Column(nullable = false)
     private boolean verified;
+
+    private LocalDateTime expiryDate;
 
 }
