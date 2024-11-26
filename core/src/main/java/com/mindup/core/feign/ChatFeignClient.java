@@ -10,6 +10,4 @@ public interface ChatFeignClient {
 
     @PostMapping("/subscribe-professional/{id}")
      boolean subscribeProfessional(@PathVariable String id);
-
-
 }
