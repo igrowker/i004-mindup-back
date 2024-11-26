@@ -64,11 +64,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(String email, String newPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    public void changePassword(String userId, String currentPassword, String newPassword) {
+        System.out.println("Service invoked for userId: " + userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        System.out.println("User found: " + user.getEmail());
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new InvalidPasswordException("The current password is incorrect.");
+        }
+        PasswordValidation.validatePassword(newPassword);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        System.out.println("Password updated successfully.");
     }
 
     @Override
@@ -76,13 +83,13 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email,"Account not found");
+            return new ResponseLoginDto(null, email, "Account not found");
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email,"Invalid mail or password");
+            return new ResponseLoginDto(user.getUserId(), email, "Invalid mail or password");
         }
 
         String token = jwtService.generateToken(email);
@@ -131,11 +138,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO toggleAvailability(String id) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+        User user = userRepository.findById(id).orElseThrow(()
+                -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
         user.setAvailability(!user.getAvailability());
         var savedUser = userRepository.save(user);
-        if (user.getAvailability()){ chatFeignClient.subscribeProfessional(id); }
+        if (user.getAvailability()) {
+            chatFeignClient.subscribeProfessional(id);
+        }
         var response = userMapper.toUserDTO(savedUser);
         return response;
     }
@@ -194,7 +203,7 @@ public class UserServiceImpl implements UserService {
         } while (tokenExists);
 
         LocalDateTime expirationDate = LocalDateTime.now().plusHours(1);
-        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser (user);
+        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser(user);
 
         if (existingTokenOpt.isPresent()) {
             PasswordResetToken existingToken = existingTokenOpt.get();
@@ -208,7 +217,7 @@ public class UserServiceImpl implements UserService {
         }
 
         PasswordResetToken newToken = new PasswordResetToken();
-        newToken.setUser (user);
+        newToken.setUser(user);
         newToken.setToken(token);
         newToken.setExpiryDate(expirationDate);
         passwordResetTokenRepository.save(newToken);
@@ -224,7 +233,7 @@ public class UserServiceImpl implements UserService {
         if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token has expired");
         }
-        User user = passwordResetToken.getUser ();
+        User user = passwordResetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);

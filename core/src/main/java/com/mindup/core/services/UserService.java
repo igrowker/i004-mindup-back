@@ -10,7 +10,7 @@ public interface UserService {
 
     Optional<UserDTO> findUserByEmail(String email);
 
-    void changePassword(String email, String newPassword);
+    void changePassword(String userId, String currentPassword, String newPassword);
 
     ResponseLoginDto authenticateUser(String email, String password);
 
