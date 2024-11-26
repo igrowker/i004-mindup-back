@@ -1,5 +1,7 @@
 package com.mindup.core.controllers;
 
+import com.mindup.core.dtos.PasswordReset.PasswordResetDTO;
+import com.mindup.core.dtos.PasswordReset.PasswordResetRequestDTO;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.entities.User;
@@ -109,7 +111,8 @@ public class UserController {
     public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String id) {
         UserDTO user = userService.toggleAvailability(id);
         return ResponseEntity.ok(user);
-  
+    }
+    
     @GetMapping("/user/{userId}/profile")
     public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
         UserProfileDTO userProfile = userService.getUserProfile(userId);
@@ -123,5 +126,17 @@ public class UserController {
         UserValidation.validateUserProfile(userProfileDTO);
         userService.updateUserProfile(userId, userProfileDTO);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/requestPwReset")
+    public ResponseEntity<String> requestPasswordReset(@RequestBody @Valid PasswordResetRequestDTO requestDTO) {
+        userService.requestPasswordReset(requestDTO.getEmail());
+        return ResponseEntity.ok("Password reset link has been sent to your email.");
+    }
+
+    @PostMapping("/resetPW")
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordResetDTO resetDTO) {
+        userService.resetPassword(resetDTO.getToken(), resetDTO.getNewPassword());
+        return ResponseEntity.ok("Password has been reset successfully.");
     }
 }

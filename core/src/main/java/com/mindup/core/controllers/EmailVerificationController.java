@@ -18,7 +18,7 @@ public class EmailVerificationController {
         if (isVerified) {
             return "Email verified successfully!";
         } else {
-            return "Invalid verification token.";
+            return "Invalid verification token or Expiry date!.";
         }
     }
 }
