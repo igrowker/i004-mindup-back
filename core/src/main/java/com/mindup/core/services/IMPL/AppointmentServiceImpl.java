@@ -9,7 +9,6 @@ import com.mindup.core.mappers.AppointmentMapper;
 import com.mindup.core.repositories.IAppointmentRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.IAppointmentService;
-
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
@@ -25,11 +24,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AppointmentServiceImpl implements IAppointmentService {
-    private IAppointmentRepository appointmentRepository;
-    private AppointmentMapper appointmentMapper;
-    private UserRepository userRepository;
+    private final IAppointmentRepository appointmentRepository;
+    private final AppointmentMapper appointmentMapper;
+    private final UserRepository userRepository;
 
-    // changes incoming soon/*
     @Override
     public Set<ResponseAppointmentDto> getPatientReservedAppointments(String id) {
         // Cheking if patient exists
@@ -88,13 +86,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
             throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
+    public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
+        // Checking if patient exists
+        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
 
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
-        return appointmentMapper.toResponseDtoSet(appointments);
-    }
+        if(patient.getRole() != Role.PATIENT) throw new IllegalArgumentException("Bad argument, user isn't a patient");
 
-    @Override
-    public Set<ResponseAppointmentDto> getAppointmentsPending() {
+        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
         List<AppointmentEntity> appointmentEntityList = appointmentRepository.findAll();
         Set<AppointmentEntity> pendingList = appointmentEntityList.stream()
                 .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.PENDING &&

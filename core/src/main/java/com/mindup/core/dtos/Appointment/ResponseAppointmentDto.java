@@ -8,9 +8,9 @@ import lombok.Builder;
 
 @Builder
 public record ResponseAppointmentDto(
-    Long appointmenId,
-    Long patientId,
-    Long psychologistId,
+    String appointmenId,
+    String patientId,
+    String psychologistId,
     LocalDateTime date,
     AppointmentStatus status
 ) { }

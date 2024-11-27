@@ -1,4 +1,4 @@
-package com.mindup.core.dtos;
+package com.mindup.core.dtos.User;
 
 import com.mindup.core.enums.Role;
 import lombok.*;
@@ -7,9 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
+    private String userId;
     private String name;
     private String email;
     private Role role;
     private String preferences;
     private String profile;
+    private Boolean availability;
 }

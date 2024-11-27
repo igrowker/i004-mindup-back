@@ -14,10 +14,11 @@ public interface IAppointmentService {
     Set<ResponseAppointmentDto> getAppointmentsPending();
     Set<ResponseAppointmentDto> getAppointmentsAccepted();
     Set<ResponseAppointmentDto> getAppointmetsCanceled();
-
+    
     ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto);
     ResponseAppointmentDto update(RequestUpdateAppointmentDto requestDto);
 
     ResponseDeleteAppointmentDto delete(String appointmentId);
     ResponseReactivateAppointmentDto reactivateAppointment(String appointmentId);
+
 }

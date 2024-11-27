@@ -1,4 +1,4 @@
-package com.mindup.core.dtos;
+package com.mindup.core.dtos.User;
 
 import com.mindup.core.enums.Role;
 import jakarta.validation.constraints.*;

@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "appointments")
 public class AppointmentEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     @ManyToOne(targetEntity = User.class,fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "patient_id",nullable = false,unique = true)

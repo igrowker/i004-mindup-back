@@ -2,7 +2,6 @@ package com.mindup.core.repositories;
 
 import com.mindup.core.entities.AppointmentEntity;
 import com.mindup.core.entities.User;
-import com.mindup.core.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
