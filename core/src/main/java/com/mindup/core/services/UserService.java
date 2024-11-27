@@ -1,6 +1,7 @@
 package com.mindup.core.services;
 
 import com.mindup.core.dtos.User.*;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public interface UserService {
 
     Boolean findPatientByUserIdAndRole(String id);
 
-    void requestPasswordReset(String email);
+    ResponseEntity<String> requestPasswordReset(String email);
 
-    void resetPassword(String token, String newPassword);
+    ResponseEntity<String> resetPassword(String token, String newPassword);
 }

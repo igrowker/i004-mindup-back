@@ -143,13 +143,12 @@ public class UserController {
 
     @PostMapping("/requestPwReset")
     public ResponseEntity<String> requestPasswordReset(@RequestBody @Valid PasswordResetRequestDTO requestDTO) {
-        userService.requestPasswordReset(requestDTO.getEmail());
-        return ResponseEntity.ok("Password reset link has been sent to your email.");
+        ResponseEntity<String> response = userService.requestPasswordReset(requestDTO.getEmail());
+        return response;
     }
 
     @PostMapping("/resetPW")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordResetDTO resetDTO) {
-        userService.resetPassword(resetDTO.getToken(), resetDTO.getNewPassword());
-        return ResponseEntity.ok("Password has been reset successfully.");
+        return userService.resetPassword(resetDTO.getToken(), resetDTO.getNewPassword());
     }
 }
