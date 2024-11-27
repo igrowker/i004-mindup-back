@@ -68,11 +68,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(String email, String newPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    public void changePassword(String userId, String currentPassword, String newPassword) {
+        System.out.println("Service invoked for userId: " + userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        System.out.println("User found: " + user.getEmail());
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new InvalidPasswordException("The current password is incorrect.");
+        }
+        PasswordValidation.validatePassword(newPassword);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        System.out.println("Password updated successfully.");
     }
 
     @Override
@@ -80,13 +87,13 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email,"Account not found");
+            return new ResponseLoginDto(null, email, "Account not found");
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email,"Invalid mail or password");
+            return new ResponseLoginDto(user.getUserId(), email, "Invalid mail or password");
         }
 
         String token = jwtService.generateToken(email);
@@ -202,8 +209,17 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<String> requestPasswordReset(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con el email: " + email));
+        String token;
+        boolean tokenExists;
 
-        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser (user);
+        do {
+            token = UUID.randomUUID().toString();
+            tokenExists = passwordResetTokenRepository.findByToken(token).isPresent();
+        } while (tokenExists);
+
+        LocalDateTime expirationDate = LocalDateTime.now().plusHours(1);
+        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser(user);
+
         if (existingTokenOpt.isPresent()) {
             PasswordResetToken existingToken = existingTokenOpt.get();
             if (existingToken.getExpiryDate().isAfter(LocalDateTime.now())) {
@@ -218,7 +234,7 @@ public class UserServiceImpl implements UserService {
         LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
-        newToken.setUser (user);
+        newToken.setUser(user);
         newToken.setToken(token);
         newToken.setExpiryDate(expirationDate);
 
@@ -245,8 +261,7 @@ public class UserServiceImpl implements UserService {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        User user = passwordResetToken.getUser ();
+        User user = passwordResetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);
