@@ -123,6 +123,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDtoSet(canceledList);
     }
 
+    // agregar checkear si el que lo crea es el de la sesion
     @Override
     public ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto) {
         // Checking if patient and psychologist exists
@@ -147,6 +148,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (patientAppointmentsCount > 0) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
+        // Preguntar al front que se dedique a esto 
 
         // Verify psychologist appointments 10 minutes before and after
         LocalDateTime beforeAppointment = requestDto.date().minusMinutes(10);
@@ -194,6 +196,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDto(appointment);
     };
     
+    // preguntar al front que se dedique a esto
     @Override
     public ResponseAppointmentDto update(RequestUpdateAppointmentDto requestUpdateAppointmentDto) {
         // Checking if patient and psychologist exists
