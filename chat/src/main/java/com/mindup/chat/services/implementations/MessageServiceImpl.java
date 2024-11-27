@@ -83,7 +83,7 @@ public class MessageServiceImpl implements MessageService {
     //Endpoint 3: Corrobora que sea profesional y settea su id en el temporalChatDb. Esto sirve para pasar luego a la DB permanente (scheduler).
     @Transactional
     @Override
-    public Boolean professionalAccepted(TemporalChatDto temporalChatDto) {
+    public Boolean professionalAccepted(TemporalChatDto temporalChatDto) { // NOS QUEDAMOS ACA GUILLE!!!!!!
         coreFeignClient.findProfessionalByUserIdAndRole(temporalChatDto.professionalId());
         TemporalChat temporalChat = temporalChatRepository.findById(temporalChatDto.temporalChatId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chat not found with id: " + temporalChatDto.temporalChatId()));

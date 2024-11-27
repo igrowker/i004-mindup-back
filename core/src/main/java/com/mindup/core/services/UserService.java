@@ -32,4 +32,8 @@ public interface UserService {
     Boolean findProfessionalByUserIdAndRole(String id);
 
     Boolean findPatientByUserIdAndRole(String id);
+
+    void requestPasswordReset(String email);
+
+    void resetPassword(String token, String newPassword);
 }

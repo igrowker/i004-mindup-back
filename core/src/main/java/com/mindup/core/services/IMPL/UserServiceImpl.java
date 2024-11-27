@@ -2,11 +2,12 @@ package com.mindup.core.services.IMPL;
 
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.dtos.User.*;
+import com.mindup.core.entities.PasswordResetToken;
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.*;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.feign.ChatFeignClient;
-import com.mindup.core.repositories.EmailVerificationRepository;
+import com.mindup.core.repositories.PasswordResetTokenRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
 import com.mindup.core.services.EmailVerificationService;
@@ -16,11 +17,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.validations.*;
-
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -32,8 +32,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
-    private final EmailVerificationRepository emailVerificationRepository;
     private final ChatFeignClient chatFeignClient;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     @Transactional
@@ -50,15 +50,13 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
-
         EmailVerification emailVerification = new EmailVerification();
         emailVerification.setUser(user);
         emailVerification.setVerificationToken(token);
         emailVerification.setVerified(false);
-        emailVerificationRepository.save(emailVerification);
         emailVerificationService.sendVerificationEmail(user.getEmail(), token);
-        var user1 = userRepository.save(user);
-        return userMapper.toUserDTO(user1);
+
+        return userMapper.toUserDTO(user);
     }
 
     @Override
@@ -78,12 +76,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseLoginDto authenticateUser(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            return new ResponseLoginDto(null, email,"Account not found");
+        }
+
+        User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            throw new RuntimeException("Invalid mail or password");
+            return new ResponseLoginDto(user.getUserId(), email,"Invalid mail or password");
         }
+
         String token = jwtService.generateToken(email);
         return new ResponseLoginDto(user.getUserId(), email, token);
     }
@@ -192,5 +195,55 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    @Transactional
+    public void requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con el email: " + email));
+
+        String token;
+        boolean tokenExists;
+
+        do {
+            token = UUID.randomUUID().toString();
+            tokenExists = passwordResetTokenRepository.findByToken(token).isPresent();
+        } while (tokenExists);
+
+        LocalDateTime expirationDate = LocalDateTime.now().plusHours(1);
+        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser (user);
+
+        if (existingTokenOpt.isPresent()) {
+            PasswordResetToken existingToken = existingTokenOpt.get();
+
+            if (existingToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+                passwordResetTokenRepository.delete(existingToken);
+            } else {
+                emailVerificationService.sendPasswordResetEmail(user.getEmail(), existingToken.getToken());
+                return;
+            }
+        }
+
+        PasswordResetToken newToken = new PasswordResetToken();
+        newToken.setUser (user);
+        newToken.setToken(token);
+        newToken.setExpiryDate(expirationDate);
+        passwordResetTokenRepository.save(newToken);
+        emailVerificationService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token has expired");
+        }
+        User user = passwordResetToken.getUser ();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(passwordResetToken);
+    }
 
 }
