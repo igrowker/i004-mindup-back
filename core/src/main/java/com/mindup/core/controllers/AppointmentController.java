@@ -11,19 +11,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mindup.core.dtos.Appointment.RequestCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.RequestUpdateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
-
+import com.mindup.core.dtos.Appointment.ResponseCreateAppointmentDto;
+import com.mindup.core.dtos.Appointment.ResponseReactivateAppointmentDto;
 import com.mindup.core.services.IAppointmentService;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 
 @RestController
 @RequestMapping("/api/appointment")
@@ -55,22 +54,42 @@ public class AppointmentController {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPsychologist(id));
     }
 
+    // buscar por estados todos los appointmets (CANCELED, PENDING & ACCEPTED)
+    @GetMapping("/pending")
+    public ResponseEntity<Set<ResponseAppointmentDto>> getAppointmentPending() {
+        return ResponseEntity.ok(iAppointmentService.getAppointmentsPending());
+    }
+
+    @GetMapping("/acepted")
+    public ResponseEntity<Set<ResponseAppointmentDto>> getAppointmentAcepted() {
+        return ResponseEntity.ok(iAppointmentService.getAppointmentsAccepted());
+    }
+
+    @GetMapping("/canceled")
+    public ResponseEntity<Set<ResponseAppointmentDto>> getAppointmentCanceled() {
+        return ResponseEntity.ok(iAppointmentService.getAppointmetsCanceled());
+    }
+
+    // metodos para interactuar con la entidad
     @PostMapping("/create")
-    public ResponseEntity<ResponseAppointmentDto> createAppointment(@RequestBody RequestCreateAppointmentDto requestCreateAppointmentDto ) {
-        ResponseAppointmentDto responseAppointmentDto = iAppointmentService.add(requestCreateAppointmentDto);
+    public ResponseEntity<ResponseCreateAppointmentDto> createAppointment(
+            @RequestBody RequestCreateAppointmentDto requestCreateAppointmentDto) {
+        ResponseCreateAppointmentDto responseAppointmentDto = iAppointmentService.add(requestCreateAppointmentDto);
         return ResponseEntity.ok(responseAppointmentDto);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<ResponseAppointmentDto> updateAppointment(@RequestBody RequestUpdateAppointmentDto requestUpdateAppointmentDto ) {
+    @PostMapping("/update")
+    public ResponseEntity<ResponseAppointmentDto> updateAppointment(
+            @RequestBody RequestUpdateAppointmentDto requestUpdateAppointmentDto) {
         ResponseAppointmentDto responseAppointmentDto = iAppointmentService.update(requestUpdateAppointmentDto);
         return ResponseEntity.ok(responseAppointmentDto);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteAppointment(@PathVariable String id) {
-        iAppointmentService.delete(id);
-        return ResponseEntity.noContent().build();
+    @PostMapping("/reactivate/{appointmentId}")
+    public ResponseEntity<ResponseReactivateAppointmentDto> reactivateAppointment(
+        @PathVariable String appointmentId) {
+        ResponseReactivateAppointmentDto response = iAppointmentService.reactivateAppointment(appointmentId);
+        return ResponseEntity.ok(response);
     }
 
 }

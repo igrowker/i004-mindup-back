@@ -4,20 +4,16 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
+@Builder
 public record RequestCreateAppointmentDto(
-<<<<<<< Updated upstream
-    Long patientId,
-    Long psychologistId,
-=======
-    @NotNull(message ="The Patient ID is required")
+    @NotNull(message = "El id de paciente es obligatorio")
     String patientId,
-
-    @NotNull(message ="The Psychologist ID is required")
+    @NotNull(message = "El id de psycologo es obligatorio")
     String psychologistId,
     
     @NotNull(message = "The date of the Appointment is required")
     @Future(message = "The date of the Appointmest must be on future")
->>>>>>> Stashed changes
     LocalDateTime date
 ) { }

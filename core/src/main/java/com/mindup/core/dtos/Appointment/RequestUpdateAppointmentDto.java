@@ -4,24 +4,22 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import com.mindup.core.enums.AppointmentStatus;
 
+import lombok.Builder;
+
+@Builder
 public record RequestUpdateAppointmentDto(
-<<<<<<< Updated upstream
-    Long appointmenId,
-    Long patientId,
-    Long psychologistId,
-=======
-    @NotNull(message ="The appointment ID is required")
+    @NotNull(message = "El id de la cita es obligatorio")
     String appointmenId,
-
-    @NotNull(message ="The Patient ID is required")
+    @NotNull(message = "El id de paciente es obligatorio")
     String patientId,
-
-    @NotNull(message ="The psychologist ID is required")
-    String psychologistId,
-    
-    @NotNull(message = "The date of the Appointment is required")
-    @Future(message = "The date of the Appointmest must be on future")
->>>>>>> Stashed changes
-    LocalDateTime date
+    @NotNull(message = "El id del psicologo es obligatorio")
+    String psychologistId,   
+    @NotNull(message = "La fecha es obligatoria")
+    @Future
+    LocalDateTime date,
+    @NotNull(message = "El status a cambiar es obligatorio")
+    AppointmentStatus appointmentStatus
 ) { }
+    

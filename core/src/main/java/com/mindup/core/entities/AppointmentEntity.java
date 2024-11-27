@@ -27,6 +27,8 @@ public class AppointmentEntity {
     @Column(name = "appointment_date",nullable = false,columnDefinition = "DATE",unique = true)
     private LocalDateTime date;
 
+    private LocalDateTime softDelete;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppointmentStatus status;

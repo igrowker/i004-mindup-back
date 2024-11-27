@@ -7,10 +7,9 @@ import com.mindup.core.enums.AppointmentStatus;
 import lombok.Builder;
 
 @Builder
-public record ResponseAppointmentDto(
-    Long appointmenId,
-    Long patientId,
-    Long psychologistId,
-    LocalDateTime date,
+public record ResponseDeleteAppointmentDto(
+    String appointmentId,
+    LocalDateTime dateSoftDelete,
     AppointmentStatus status
+
 ) { }
