@@ -19,12 +19,7 @@ public class TemporalChat {
     private String temporalChatId = UUID.randomUUID().toString();
     private String patientId;
     private String professionalId;
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp=LocalDateTime.now();
 
-    @PrePersist
-    public void prePersist(){
-        this.professionalId=null;
-        this.timestamp=LocalDateTime.now();
-    }
 }
 

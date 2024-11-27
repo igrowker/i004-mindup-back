@@ -85,9 +85,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Boolean professionalAccepted(TemporalChatDto temporalChatDto) {
         coreFeignClient.findProfessionalByUserIdAndRole(temporalChatDto.professionalId());
-        String temporalChatId = temporalChatDto.temporalChatId();
-        TemporalChat temporalChat = temporalChatRepository.findById(temporalChatId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with userId: " + temporalChatDto.professionalId()));
+        TemporalChat temporalChat = temporalChatRepository.findById(temporalChatDto.temporalChatId())
+                .orElseThrow(() -> new ResourceNotFoundException("Chat not found with id: " + temporalChatDto.temporalChatId()));
         temporalChat.setProfessionalId(temporalChatDto.professionalId());
         return true;
     }

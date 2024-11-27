@@ -12,5 +12,5 @@ import java.io.IOException;
 public interface ChatFeignClient {
 
     @PostMapping("/join-professional/{professionalId}")
-    ResponseEntity<?> joinProfessional(@PathVariable("{professionalId}") String id)throws IOException;
+    ResponseEntity<?> joinProfessional(@PathVariable("professionalId") String id)throws IOException;
 }
