@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.validations.*;
+
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -127,12 +129,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO toggleAvailability(String id) {
+    public UserDTO toggleAvailability(String id) throws IOException {
             User user = userRepository.findById(id).orElseThrow(() ->
                     new IllegalArgumentException("Usuario no encontrado con ID: " + id));
             user.setAvailability(!user.getAvailability());
             var savedUser = userRepository.save(user);
-            if (user.getAvailability()){ chatFeignClient.subscribeProfessional(id); }
+            if (user.getAvailability()){ chatFeignClient.joinProfessional(id); }
             var response = userMapper.toUserDTO(savedUser);
             return response;
     }
@@ -145,8 +147,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean findProfessionalById(String id) {
-        userRepository.findProfessionalById(id,Role.PSYCHOLOGIST)
+    public Boolean findProfessionalByUserIdAndRole(String id) {
+        userRepository.findUserByUserIdAndRole(id,Role.PSYCHOLOGIST)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        return true;
+    }
+
+    @Override
+    public Boolean findPatientByUserIdAndRole(String id) {
+        userRepository.findUserByUserIdAndRole(id,Role.PATIENT)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
         return true;
     }

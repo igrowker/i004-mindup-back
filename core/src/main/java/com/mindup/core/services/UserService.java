@@ -2,6 +2,7 @@ package com.mindup.core.services;
 
 import com.mindup.core.dtos.User.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public interface UserService {
@@ -20,7 +21,7 @@ public interface UserService {
     
     void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
-    UserDTO toggleAvailability(String id);
+    UserDTO toggleAvailability(String id) throws IOException;
 
     void deleteProfileImage(String userId);
 
@@ -28,5 +29,7 @@ public interface UserService {
 
     UserProfileDTO getUserProfile(String userId);
 
-    Boolean findProfessionalById(String id);
+    Boolean findProfessionalByUserIdAndRole(String id);
+
+    Boolean findPatientByUserIdAndRole(String id);
 }

@@ -12,7 +12,7 @@ public interface MessageService {
 
     void joinProfessional(String professionalId) throws IOException;
     Boolean professionalAccepted(TemporalChatDto temporalChatDto);
-    TemporalChatDto requestChat(String patientId);
+    TemporalChatDto requestChat(String patientId) throws IOException;
     void sendToOtherUser(RequestMessageDto requestMessageDto, String professionalId);
     List<ResponseEmergencyDto> getEmergencyContact() throws IOException;
     List<ResponseOtherResourcesDto> getOtherResources() throws IOException;

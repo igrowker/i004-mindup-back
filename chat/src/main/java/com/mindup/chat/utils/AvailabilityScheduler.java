@@ -32,15 +32,12 @@ public class AvailabilityScheduler {
     //3. si ya hay un psico asignado (es decir, aceptó el pedido), se pasa la info a la DB message para conservarlo y se borra el registro de la temporalChatDB.
     @Transactional
     @Scheduled(cron = "0 * * * * ?", zone = "America/Argentina/Buenos_Aires")
-    public void checkAndTurnProfessionalUnavailable(Boolean flag) throws IOException {
+    public void checkAndTurnProfessionalUnavailable() throws IOException {
 
-        if (flag) {
             List<TemporalChat> allRegisters = temporalChatRepository.findAll();
             List<AvailablePsychologists> availablePsychologists = availablePsychologistsRepository.findAll();
-            if (availablePsychologists.isEmpty()) {
-                flag = false;
-                scraper.getEmergencyContactList();
-            }
+
+            //borramos numeros de emer
             for (TemporalChat register : allRegisters) {
                 if (register.getTimestamp().plus(1, ChronoUnit.MINUTES).isBefore(LocalDateTime.now())
                         && register.getProfessionalId() == null) {
@@ -58,6 +55,5 @@ public class AvailabilityScheduler {
                     temporalChatRepository.delete(register);
                 }
             }
-        }
     }
 }

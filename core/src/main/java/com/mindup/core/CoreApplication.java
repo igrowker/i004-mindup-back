@@ -9,7 +9,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.mindup.core.feign")
 public class CoreApplication {
 
     public static void main(String[] args) {

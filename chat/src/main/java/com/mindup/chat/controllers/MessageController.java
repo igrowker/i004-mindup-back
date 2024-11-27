@@ -40,7 +40,7 @@ public class MessageController {
 
     //Endpoint 2: Setea un temporalChat y le pasa a front las ids antes de dejar la de professional nula (por el scheduler).
     @GetMapping("/request-chat/{patientId}")
-    public ResponseEntity<TemporalChatDto>requestChat(@PathVariable String patientId){
+    public ResponseEntity<TemporalChatDto>requestChat(@PathVariable String patientId) throws IOException {
         TemporalChatDto temporalChatDto =messageService.requestChat(patientId);
         return ResponseEntity.ok(temporalChatDto);
     }

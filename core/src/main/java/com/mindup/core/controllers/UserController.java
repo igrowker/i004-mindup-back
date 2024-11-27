@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -106,7 +107,7 @@ public class UserController {
     }
 
     @PutMapping("/user/availability/{professionalId}")
-    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String professionalId) {
+    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String professionalId) throws IOException {
         UserDTO user = userService.toggleAvailability(professionalId);
         return ResponseEntity.ok(user);
     }
@@ -127,8 +128,14 @@ public class UserController {
     }
 
     @GetMapping("/user/professional/{id}")
-    public ResponseEntity<Boolean> findProfessionalById (@PathVariable String id){
-        userService.findProfessionalById(id);
+    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole (@PathVariable String id){
+        userService.findProfessionalByUserIdAndRole(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user/patient/{id}")
+    public ResponseEntity<Boolean> findPatientByUserIdAndRole (@PathVariable String id){
+        userService.findPatientByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }
 }

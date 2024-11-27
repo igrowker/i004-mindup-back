@@ -19,6 +19,7 @@ import com.mindup.chat.utils.AvailabilityScheduler;
 import com.mindup.chat.utils.Scraper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,6 @@ public class MessageServiceImpl implements MessageService {
     private final CoreFeignClient coreFeignClient;
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
-    private final AvailabilityScheduler availabilityScheduler;
 
     // Endpoint 1 (viene desde backend, api/core/user/availability/{professionalId})
     @Transactional
@@ -51,7 +51,6 @@ public class MessageServiceImpl implements MessageService {
         professional.setProfessionalId(professionalId);
         professional.setTimestamp(LocalDateTime.now());
         availablePsychologistsRepository.save(professional);
-        availabilityScheduler.checkAndTurnProfessionalUnavailable(true);
         professionalQueue.add(professionalId);
         simpMessagingTemplate.convertAndSendToUser(professionalId, "/queue/notifications",
                 "Ahora estás disponible para la asistencia por chat.");
@@ -61,11 +60,16 @@ public class MessageServiceImpl implements MessageService {
     // Porque: A. si no responde o cancela, debe ser deshabilitado y B. si acepta, no debe ser interrumpido con otro pedido de chat.
     @Transactional
     @Override
-    public TemporalChatDto requestChat(String patientId) {
+    public TemporalChatDto requestChat(String patientId) throws IOException {
         //TODO. validar id de patient -> ULI. Otro Feign que en lugar de buscar por psico busque por paciente.
+        coreFeignClient.findPatientByUserIdAndRole(patientId);
         TemporalChat temporalChat = new TemporalChat();
         temporalChat.setPatientId(patientId);
-        var professional = availablePsychologistsRepository.findAll().get(0);
+        AvailablePsychologists professional = availablePsychologistsRepository.findAll().get(0);
+        if(professional==null){
+           var numbers= scraper.getEmergencyContactList();
+           throw new ResourceNotFoundException("There's no available psychologist. For further help you can call to these numbers: " + numbers);
+        }
         temporalChat.setProfessionalId(professional.getProfessionalId());
         TemporalChat temporalChat1=temporalChatRepository.save(temporalChat);
         TemporalChatDto temporalChatDto =temporalChatMapper.toTemporalChatDto(temporalChat1);
@@ -80,7 +84,7 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     @Override
     public Boolean professionalAccepted(TemporalChatDto temporalChatDto) {
-        coreFeignClient.findProfessionalById(temporalChatDto.professionalId());
+        coreFeignClient.findProfessionalByUserIdAndRole(temporalChatDto.professionalId());
         String temporalChatId = temporalChatDto.temporalChatId();
         TemporalChat temporalChat = temporalChatRepository.findById(temporalChatId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with userId: " + temporalChatDto.professionalId()));
