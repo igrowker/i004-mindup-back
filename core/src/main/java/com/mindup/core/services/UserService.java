@@ -1,7 +1,9 @@
 package com.mindup.core.services;
 
 import com.mindup.core.dtos.User.*;
+import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public interface UserService {
@@ -20,15 +22,19 @@ public interface UserService {
     
     void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
-    UserDTO toggleAvailability(String id);
+    UserDTO toggleAvailability(String id) throws IOException;
 
     void deleteProfileImage(String userId);
 
-    public void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
+    void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
 
-    public UserProfileDTO getUserProfile(String userId);
+    UserProfileDTO getUserProfile(String userId);
 
-    void requestPasswordReset(String email);
+    Boolean findProfessionalByUserIdAndRole(String id);
 
-    void resetPassword(String token, String newPassword);
+    Boolean findPatientByUserIdAndRole(String id);
+
+    ResponseEntity<String> requestPasswordReset(String email);
+
+    ResponseEntity<String> resetPassword(String token, String newPassword);
 }
