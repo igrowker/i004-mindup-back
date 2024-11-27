@@ -5,6 +5,10 @@ import com.mindup.core.entities.AppointmentEntity;
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.AppointmentStatus;
 import com.mindup.core.enums.Role;
+import com.mindup.core.exceptions.AppointmentConflictException;
+import com.mindup.core.exceptions.ResourceNotFoundException;
+import com.mindup.core.exceptions.RoleMismatchException;
+import com.mindup.core.exceptions.UserNotFoundException;
 import com.mindup.core.mappers.AppointmentMapper;
 import com.mindup.core.repositories.IAppointmentRepository;
 import com.mindup.core.repositories.UserRepository;
@@ -29,7 +33,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public Set<ResponseAppointmentDto> getPatientReservedAppointments(String id) {
         // Cheking if patient exists
-        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        User patient = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Patient not found"));
 
         // Checking patient role
         if (patient.getRole() != Role.PATIENT)
@@ -48,11 +52,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public Set<ResponseAppointmentDto> getPshychologistReservedAppointment(String id) {
         // Cheking if patient exists
         User psychologist = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Psychologist not found"));
+                .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
 
         // Checking psychologist role
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
-            throw new IllegalArgumentException("User must be a psychologist");
+            throw new RoleMismatchException("User must be a psychologist");
 
         List<AppointmentEntity> appointmentEntityList = appointmentRepository.findAll();
         Set<AppointmentEntity> acceptedList = appointmentEntityList.stream()
@@ -67,10 +71,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
         // Checking if patient exists
-        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        User patient = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Patient not found"));
 
         if (patient.getRole() != Role.PATIENT)
-            throw new IllegalArgumentException("Bad argument, user isn't a patient");
+            throw new RoleMismatchException("Bad argument, user isn't a patient");
 
         Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
         return appointmentMapper.toResponseDtoSet(appointments);
@@ -80,10 +84,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String id) {
         // Checking if psycologist exists
         User psychologist = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new UserNotFoundException("Patient not found"));
 
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
-            throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
+            throw new RoleMismatchException("Bad argument, user isn't a psychologist");
 
         Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
         return appointmentMapper.toResponseDtoSet(appointments);
@@ -123,15 +127,15 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto) {
         // Checking if patient and psychologist exists
         User patient = userRepository.findById(requestDto.patientId())
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new UserNotFoundException("Patient not found"));
         User psychologist = userRepository.findById(requestDto.psychologistId())
-                .orElseThrow(() -> new IllegalArgumentException("Psychologist not found"));
+                .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
 
         // Checking Roles/*
         if (patient.getRole() != Role.PATIENT)
-            throw new IllegalArgumentException("User must be a patient to schedule an appointment");
+            throw new RoleMismatchException("User must be a patient to schedule an appointment");
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
-            throw new IllegalArgumentException("User must be a psychologist to schedule an appointment");
+            throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
 
         // Checking if patient already has an appointment that day
         LocalDateTime startOfDay = requestDto.date().toLocalDate().atStartOfDay();
@@ -141,7 +145,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 patient, startOfDay, endOfDay);
 
         if (patientAppointmentsCount > 0) {
-            throw new IllegalArgumentException("Patient already has an appointment on this day");
+            throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
 
         // Verify psychologist appointments 10 minutes before and after
@@ -152,7 +156,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 psychologist, beforeAppointment, afterAppointment);
 
         if (psychologistAppointmentsCount > 0) {
-            throw new IllegalArgumentException("Psychologist is not available at this time");
+            throw new AppointmentConflictException("Psychologist is not available at this time");
         }
 
         // scheduling an appointment/*
@@ -168,23 +172,46 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
+    public ResponseAppointmentDto aceptAppointment(String appointmentId){
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+        .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+
+        appointment.setStatus(AppointmentStatus.ACCEPTED);
+        appointmentRepository.save(appointment);
+
+        return appointmentMapper.toResponseDto(appointment);
+    }
+
+
+    @Override
+    public ResponseAppointmentDto cancelAppointment(String appointmentId){
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+        .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointmentRepository.save(appointment);
+
+        return appointmentMapper.toResponseDto(appointment);
+    };
+    
+    @Override
     public ResponseAppointmentDto update(RequestUpdateAppointmentDto requestUpdateAppointmentDto) {
         // Checking if patient and psychologist exists
         User patient = userRepository.findById(requestUpdateAppointmentDto.patientId())
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+                .orElseThrow(() -> new UserNotFoundException("Patient not found"));
         User psychologist = userRepository.findById(requestUpdateAppointmentDto.psychologistId())
-                .orElseThrow(() -> new IllegalArgumentException("Psychologist not found"));
+                .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
 
         // Checking Roles
         if (patient.getRole() != Role.PATIENT)
-            throw new IllegalArgumentException("User must be a patient to schedule an appointment");
+            throw new RoleMismatchException("User must be a patient to schedule an appointment");
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
-            throw new IllegalArgumentException("User must be a psychologist to schedule an appointment");
+            throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
 
         // Checking if appointment exists
         AppointmentEntity updatedEntity = appointmentRepository
                 .findById(requestUpdateAppointmentDto.appointmenId())
-                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
         // Verify patient has no other appointments on the same day
         LocalDateTime startOfDay = requestUpdateAppointmentDto.date().toLocalDate().atStartOfDay();
@@ -194,7 +221,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 patient, startOfDay, endOfDay, updatedEntity.getId());
 
         if (patientAppointmentsCount > 0) {
-            throw new IllegalArgumentException("Patient already has an appointment on this day");
+            throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
 
         // Verify psychologist availability (10 minutes before and after)
@@ -205,7 +232,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 psychologist, beforeAppointment, afterAppointment, updatedEntity.getId());
 
         if (psychologistAppointmentsCount > 0) {
-            throw new IllegalArgumentException("Psychologist is not available at this time");
+            throw new AppointmentConflictException("Psychologist is not available at this time");
         }
 
         // Update appointment
@@ -220,7 +247,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public ResponseDeleteAppointmentDto delete(String appointmentId) {
         AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment doesn't exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
         ZoneId zoneId = ZoneId.of("America/Argentina/Buenos_Aires");
         appointment.setSoftDelete(ZonedDateTime.now(zoneId).toLocalDateTime());
@@ -237,7 +264,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     @Override
     public ResponseReactivateAppointmentDto reactivateAppointment(String appointmentId) {
         AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment doesn't exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
         appointment.setSoftDelete(null);
         AppointmentEntity reactivatedAppointment = appointmentRepository.save(appointment);

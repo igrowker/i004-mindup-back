@@ -16,6 +16,8 @@ public interface IAppointmentService {
     Set<ResponseAppointmentDto> getAppointmetsCanceled();
     
     ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto);
+    ResponseAppointmentDto aceptAppointment(String id);
+    ResponseAppointmentDto cancelAppointment(String id);
     ResponseAppointmentDto update(RequestUpdateAppointmentDto requestDto);
 
     ResponseDeleteAppointmentDto delete(String appointmentId);
