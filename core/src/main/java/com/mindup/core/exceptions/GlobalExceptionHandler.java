@@ -57,4 +57,36 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(AppointmentConflictException.class)
+    public ResponseEntity<Map<String,String>> handleAppointmentConflictException(AppointmentConflictException ex) {
+        Map <String ,String> response = new HashMap<>();
+        response.put("error", "Invalid appointment time");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(PatientNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handlePatientNotFoundException(PatientNotFoundException ex) {
+        Map <String ,String> response = new HashMap<>();
+        response.put("error", "Invalid patient id");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(PsychologistNotFoundException.class)
+    public ResponseEntity<Map<String,String>> handlePsychologistNotFoundException(PsychologistNotFoundException ex) {
+        Map <String ,String> response = new HashMap<>();
+        response.put("error", "Invalid psycholohist id");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(RoleMismatchException.class)
+    public ResponseEntity<Map<String,String>> handleRoleMismatchException(RoleMismatchException ex) {
+        Map <String ,String> response = new HashMap<>();
+        response.put("error", "Invalid role request");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }
