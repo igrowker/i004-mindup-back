@@ -1,5 +1,6 @@
 package com.mindup.chat.entities;
 
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,9 +18,8 @@ public class TemporalChat {
     @Id
     private String temporalChatId = UUID.randomUUID().toString();
     private String patientId;
-    private String professionalId = null;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private String professionalId;
+    private LocalDateTime timestamp=LocalDateTime.now();
 
-    //Prepersist!
 }
 

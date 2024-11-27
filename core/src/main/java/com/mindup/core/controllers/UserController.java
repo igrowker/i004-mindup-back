@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -107,12 +108,12 @@ public class UserController {
         return ResponseEntity.ok("Profile image deleted successfully.");
     }
 
-    @PutMapping("/user/availability/{id}")
-    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String id) {
-        UserDTO user = userService.toggleAvailability(id);
+    @PutMapping("/user/availability/{professionalId}")
+    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String professionalId) throws IOException {
+        UserDTO user = userService.toggleAvailability(professionalId);
         return ResponseEntity.ok(user);
     }
-    
+
     @GetMapping("/user/{userId}/profile")
     public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
         UserProfileDTO userProfile = userService.getUserProfile(userId);
@@ -125,6 +126,18 @@ public class UserController {
             @Valid @RequestBody UserProfileDTO userProfileDTO) {
         UserValidation.validateUserProfile(userProfileDTO);
         userService.updateUserProfile(userId, userProfileDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user/professional/{id}")
+    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole (@PathVariable String id){
+        userService.findProfessionalByUserIdAndRole(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user/patient/{id}")
+    public ResponseEntity<Boolean> findPatientByUserIdAndRole (@PathVariable String id) {
+        userService.findPatientByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }
 

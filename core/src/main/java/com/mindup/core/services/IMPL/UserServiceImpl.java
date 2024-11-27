@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.validations.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +46,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.toUser(userRegisterDTO);
         user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
+
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
@@ -130,14 +132,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO toggleAvailability(String id) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("Usuario no encontrado con ID: " + id));
-        user.setAvailability(!user.getAvailability());
-        var savedUser = userRepository.save(user);
-        if (user.getAvailability()){ chatFeignClient.subscribeProfessional(id); }
-        var response = userMapper.toUserDTO(savedUser);
-        return response;
+    public UserDTO toggleAvailability(String id) throws IOException {
+            User user = userRepository.findById(id).orElseThrow(() ->
+                    new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+            user.setAvailability(!user.getAvailability());
+            var savedUser = userRepository.save(user);
+            if (user.getAvailability()){ chatFeignClient.joinProfessional(id); }
+            var response = userMapper.toUserDTO(savedUser);
+            return response;
     }
 
     @Transactional
@@ -145,6 +147,20 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
         return userMapper.toUserProfileDTO(user);
+    }
+
+    @Override
+    public Boolean findProfessionalByUserIdAndRole(String id) {
+        userRepository.findUserByUserIdAndRole(id,Role.PSYCHOLOGIST)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        return true;
+    }
+
+    @Override
+    public Boolean findPatientByUserIdAndRole(String id) {
+        userRepository.findUserByUserIdAndRole(id,Role.PATIENT)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        return true;
     }
 
     @Override
@@ -229,4 +245,5 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);
     }
+
 }
