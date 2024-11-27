@@ -14,9 +14,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/core")
@@ -66,10 +66,16 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/user/password")
-    public ResponseEntity<String> changePassword(@RequestParam String email, @RequestBody @Valid String newPassword) {
-        userService.changePassword(email, newPassword);
-        return ResponseEntity.ok("Password changed successfully");
+    @PutMapping("/{userId}/change-password")
+    public ResponseEntity<String> changePassword(
+            @PathVariable String userId,
+            @RequestBody ChangePasswordDTO changePasswordDTO) {
+        try {
+            userService.changePassword(userId, changePasswordDTO.getCurrentPassword(), changePasswordDTO.getNewPassword());
+            return ResponseEntity.ok("Password updated successfully.");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
     }
 
     @PutMapping("/user/preferences")

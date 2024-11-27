@@ -59,27 +59,32 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AppointmentConflictException.class)
-    public ResponseEntity<Map<String,String>> handleAppointmentConflictException(AppointmentConflictException ex) {
-        Map <String ,String> response = new HashMap<>();
+    public ResponseEntity<Map<String, String>> handleAppointmentConflictException(AppointmentConflictException ex) {
+        Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid appointment time");
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-
-
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handlePsychologistNotFoundException(ResourceNotFoundException ex) {
-        Map <String ,String> response = new HashMap<>();
+    public ResponseEntity<Map<String, String>> handlePsychologistNotFoundException(ResourceNotFoundException ex) {
+        Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid psycholohist id");
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(RoleMismatchException.class)
-    public ResponseEntity<Map<String,String>> handleRoleMismatchException(RoleMismatchException ex) {
-        Map <String ,String> response = new HashMap<>();
+    public ResponseEntity<Map<String, String>> handleRoleMismatchException(RoleMismatchException ex) {
+        Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid role request");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidPassword(InvalidPasswordException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Password");
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
