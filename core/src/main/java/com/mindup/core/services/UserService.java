@@ -1,6 +1,7 @@
 package com.mindup.core.services;
 
 import com.mindup.core.dtos.User.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public interface UserService {
 
     public UserProfileDTO getUserProfile(String userId);
 
-    void requestPasswordReset(String email);
+    ResponseEntity<String> requestPasswordReset(String email);
 
-    void resetPassword(String token, String newPassword);
+    ResponseEntity<String> resetPassword(String token, String newPassword);
 }

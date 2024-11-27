@@ -136,7 +136,7 @@ public class EmailVerificationService {
                 "           <a href=\"" + resetLink
                 + "\" class='button' style='color: #ffffff;'>Restablecer Password</a>" +
                 "       </div>" +
-                "       <p style='text-align: center; color: #ff0000;'>Nota: Este enlace expirará en 1 hora.</p>" +
+                "       <p style='text-align: center; color: #ff0000;'>Nota: Este enlace expirará en 15 Min.</p>" +
                 "       <div class='image-container'>" +
                 "           <img src='cid:logoImage' alt='Logo' style='width:150px;height:auto;'/>" +
                 "       </div>" +
@@ -158,7 +158,7 @@ public class EmailVerificationService {
             passwordResetToken.setUser(
                     userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User  not found")));
             passwordResetToken.setToken(token);
-            passwordResetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+            passwordResetToken.setExpiryDate(LocalDateTime.now().plusMinutes(15));
             passwordResetTokenRepository.save(passwordResetToken);
             mailSender.send(message);
         } catch (MessagingException e) {

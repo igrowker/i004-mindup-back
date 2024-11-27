@@ -13,6 +13,8 @@ import com.mindup.core.security.JwtService;
 import com.mindup.core.services.EmailVerificationService;
 import com.mindup.core.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mindup.core.mappers.UserMapper;
@@ -181,52 +183,57 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void requestPasswordReset(String email) {
+    public ResponseEntity<String> requestPasswordReset(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con el email: " + email));
 
-        String token;
-        boolean tokenExists;
-
-        do {
-            token = UUID.randomUUID().toString();
-            tokenExists = passwordResetTokenRepository.findByToken(token).isPresent();
-        } while (tokenExists);
-
-        LocalDateTime expirationDate = LocalDateTime.now().plusHours(1);
         Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser (user);
-
         if (existingTokenOpt.isPresent()) {
             PasswordResetToken existingToken = existingTokenOpt.get();
-
-            if (existingToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-                passwordResetTokenRepository.delete(existingToken);
+            if (existingToken.getExpiryDate().isAfter(LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Ya has solicitado un restablecimiento de contraseña. Por favor, espera hasta que el token expire.");
             } else {
-                emailVerificationService.sendPasswordResetEmail(user.getEmail(), existingToken.getToken());
-                return;
+                passwordResetTokenRepository.delete(existingToken);
             }
         }
+
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
         newToken.setUser (user);
         newToken.setToken(token);
         newToken.setExpiryDate(expirationDate);
-        passwordResetTokenRepository.save(newToken);
+
         emailVerificationService.sendPasswordResetEmail(user.getEmail(), token);
+
+        return ResponseEntity.ok("Se ha enviado un correo para restablecer la contraseña.");
     }
 
     @Override
     @Transactional
-    public void resetPassword(String token, String newPassword) {
-        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid token"));
+    public ResponseEntity<String> resetPassword(String token, String newPassword) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token).orElse(null);
 
-        if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token has expired");
+        if (passwordResetToken == null) {
+            return ResponseEntity.badRequest().body("Invalid token");
         }
+        if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token has expired");
+        }
+
+        try {
+            PasswordValidation.validatePassword(newPassword);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
         User user = passwordResetToken.getUser ();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);
+        return ResponseEntity.ok("Password has been reset successfully.");
     }
 }
