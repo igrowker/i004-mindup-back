@@ -10,8 +10,6 @@ import com.mindup.core.repositories.IAppointmentRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.IAppointmentService;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,7 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AppointmentServiceImpl implements IAppointmentService {
     private final IAppointmentRepository appointmentRepository;
     private final AppointmentMapper appointmentMapper;
@@ -86,13 +84,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         if (psychologist.getRole() != Role.PSYCHOLOGIST)
             throw new IllegalArgumentException("Bad argument, user isn't a psychologist");
-    public Set<ResponseAppointmentDto> getAppointmentsByPatient(String id) {
-        // Checking if patient exists
-        User patient = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Patient not found"));
 
-        if(patient.getRole() != Role.PATIENT) throw new IllegalArgumentException("Bad argument, user isn't a patient");
+        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
+        return appointmentMapper.toResponseDtoSet(appointments);
+    }
 
-        Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
+    @Override
+    public Set<ResponseAppointmentDto> getAppointmentsPending() {
         List<AppointmentEntity> appointmentEntityList = appointmentRepository.findAll();
         Set<AppointmentEntity> pendingList = appointmentEntityList.stream()
                 .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.PENDING &&
