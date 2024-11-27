@@ -1,4 +1,5 @@
 package com.mindup.chat.entities;
+import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,5 +25,10 @@ public class Message {
     @Size(max = 1000)
     private String content;
 
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp;
+
+    @PrePersist
+    public void prePersist(){
+        this.timestamp=LocalDateTime.now();
+    }
 }

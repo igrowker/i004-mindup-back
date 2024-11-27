@@ -43,7 +43,7 @@ public class User {
     @Column
     private String profile;
   
-    private Boolean availability;
+    private Boolean availability=false;
   
     @Column
     private String profileImageUrl;
@@ -97,4 +97,5 @@ public class User {
             throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set tuition.");
         }
     }
+
 }
