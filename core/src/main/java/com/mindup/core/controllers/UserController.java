@@ -14,8 +14,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.io.IOException;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/core")
@@ -65,10 +66,16 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/user/password")
-    public ResponseEntity<String> changePassword(@RequestParam String email, @RequestBody @Valid String newPassword) {
-        userService.changePassword(email, newPassword);
-        return ResponseEntity.ok("Password changed successfully");
+    @PutMapping("/{userId}/change-password")
+    public ResponseEntity<String> changePassword(
+            @PathVariable String userId,
+            @RequestBody ChangePasswordDTO changePasswordDTO) {
+        try {
+            userService.changePassword(userId, changePasswordDTO.getCurrentPassword(), changePasswordDTO.getNewPassword());
+            return ResponseEntity.ok("Password updated successfully.");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
     }
 
     @PutMapping("/user/preferences")
@@ -107,12 +114,12 @@ public class UserController {
         return ResponseEntity.ok("Profile image deleted successfully.");
     }
 
-    @PutMapping("/user/availability/{id}")
-    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String id) {
-        UserDTO user = userService.toggleAvailability(id);
+    @PutMapping("/user/availability/{professionalId}")
+    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String professionalId) throws IOException {
+        UserDTO user = userService.toggleAvailability(professionalId);
         return ResponseEntity.ok(user);
     }
-    
+
     @GetMapping("/user/{userId}/profile")
     public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
         UserProfileDTO userProfile = userService.getUserProfile(userId);
@@ -128,15 +135,26 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/user/professional/{id}")
+    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole (@PathVariable String id){
+        userService.findProfessionalByUserIdAndRole(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user/patient/{id}")
+    public ResponseEntity<Boolean> findPatientByUserIdAndRole (@PathVariable String id) {
+        userService.findPatientByUserIdAndRole(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/requestPwReset")
     public ResponseEntity<String> requestPasswordReset(@RequestBody @Valid PasswordResetRequestDTO requestDTO) {
-        userService.requestPasswordReset(requestDTO.getEmail());
-        return ResponseEntity.ok("Password reset link has been sent to your email.");
+        ResponseEntity<String> response = userService.requestPasswordReset(requestDTO.getEmail());
+        return response;
     }
 
     @PostMapping("/resetPW")
     public ResponseEntity<String> resetPassword(@RequestBody @Valid PasswordResetDTO resetDTO) {
-        userService.resetPassword(resetDTO.getToken(), resetDTO.getNewPassword());
-        return ResponseEntity.ok("Password has been reset successfully.");
+        return userService.resetPassword(resetDTO.getToken(), resetDTO.getNewPassword());
     }
 }
