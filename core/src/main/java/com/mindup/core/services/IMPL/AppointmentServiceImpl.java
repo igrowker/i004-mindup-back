@@ -13,6 +13,8 @@ import com.mindup.core.mappers.AppointmentMapper;
 import com.mindup.core.repositories.IAppointmentRepository;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.IAppointmentService;
+import com.mindup.core.validations.UserValidation;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
     private final IAppointmentRepository appointmentRepository;
     private final AppointmentMapper appointmentMapper;
     private final UserRepository userRepository;
+    private final UserValidation userValidation;
 
     @Override
     public Set<ResponseAppointmentDto> getPatientReservedAppointments(String id) {
@@ -123,7 +126,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDtoSet(canceledList);
     }
 
-    // agregar checkear si el que lo crea es el de la sesion
+    // agregar checkear si el que lo crea es el de la sesion// posible, no se si es necesario
+
     @Override
     public ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto) {
         // Checking if patient and psychologist exists
@@ -132,11 +136,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
         User psychologist = userRepository.findById(requestDto.psychologistId())
                 .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
 
-        // Checking Roles/*
-        if (patient.getRole() != Role.PATIENT)
-            throw new RoleMismatchException("User must be a patient to schedule an appointment");
-        if (psychologist.getRole() != Role.PSYCHOLOGIST)
-            throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
 
         // Checking if patient already has an appointment that day
         LocalDateTime startOfDay = requestDto.date().toLocalDate().atStartOfDay();
@@ -150,12 +149,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
         }
         // Preguntar al front que se dedique a esto 
 
-        // Verify psychologist appointments 10 minutes before and after
-        LocalDateTime beforeAppointment = requestDto.date().minusMinutes(10);
-        LocalDateTime afterAppointment = requestDto.date().plusMinutes(10);
+        // Verify psychologist appointments 30 minutes before and after
+        LocalDateTime beforeAppointment = requestDto.date().minusMinutes(30);
 
-        long psychologistAppointmentsCount = appointmentRepository.countByPsychologistAndDateBetween(
-                psychologist, beforeAppointment, afterAppointment);
+        long psychologistAppointmentsCount = appointmentRepository.countByPsychologistAndDateBefore(
+                psychologist, beforeAppointment);
 
         if (psychologistAppointmentsCount > 0) {
             throw new AppointmentConflictException("Psychologist is not available at this time");
@@ -187,6 +185,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
     @Override
     public ResponseAppointmentDto cancelAppointment(String appointmentId){
+
         AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
         .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
@@ -208,9 +207,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
         // Checking Roles
         if (patient.getRole() != Role.PATIENT)
             throw new RoleMismatchException("User must be a patient to schedule an appointment");
-        if (psychologist.getRole() != Role.PSYCHOLOGIST)
+        if (psychologist.getRole() == Role.PSYCHOLOGIST)
             throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
 
+        if(!userValidation.isPatient()) {
+            throw new RoleMismatchException("Only psychologists can cancel appointments");
+        }
+            
         // Checking if appointment exists
         AppointmentEntity updatedEntity = appointmentRepository
                 .findById(requestUpdateAppointmentDto.appointmenId())

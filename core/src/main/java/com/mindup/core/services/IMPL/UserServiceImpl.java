@@ -230,8 +230,8 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
+        token = UUID.randomUUID().toString();
+        expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
         newToken.setUser(user);

@@ -21,7 +21,7 @@ public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,
     long countByPatientAndDateBetween(User patient, LocalDateTime start, LocalDateTime end);
     
     // count psycologist appointments in an date range
-    long countByPsychologistAndDateBetween(User psychologist, LocalDateTime start, LocalDateTime end);
+    long countByPsychologistAndDateBefore(User psychologist, LocalDateTime start);
 
     // Count patient appointments excluding the current appointment
     long countByPatientAndDateBetweenAndIdNot(User patient, LocalDateTime start, LocalDateTime end, String excludeAppointmentId);
