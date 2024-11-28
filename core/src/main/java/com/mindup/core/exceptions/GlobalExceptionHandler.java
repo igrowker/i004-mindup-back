@@ -101,6 +101,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleEmptyAppointmentsByStateException(EmptyAppointmentsByStateException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", "State without appointments");
+        response.put("message",ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(EmptyAppointmentException.class)
+    public ResponseEntity<Map<String, String>> handleEmptyAppointmentException(EmptyAppointmentException ex ){
+        Map<String , String> response = new HashMap<>();
+        response.put("error","Empty appointments");
+        response.put("message",ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
         
@@ -159,4 +168,6 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+
 }

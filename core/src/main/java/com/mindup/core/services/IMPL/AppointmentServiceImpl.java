@@ -6,6 +6,7 @@ import com.mindup.core.entities.User;
 import com.mindup.core.enums.AppointmentStatus;
 import com.mindup.core.enums.Role;
 import com.mindup.core.exceptions.AppointmentConflictException;
+import com.mindup.core.exceptions.EmptyAppointmentException;
 import com.mindup.core.exceptions.EmptyAppointmentsByStateException;
 import com.mindup.core.exceptions.ResourceAlreadyExistsException;
 import com.mindup.core.exceptions.ResourceNotFoundException;
@@ -52,6 +53,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
                         appointmentEntity.getPatient().getUserId() == patient.getUserId() &&
                         appointmentEntity.getSoftDelete() == null)
                 .collect(Collectors.toSet());
+
+        if (acceptedList.isEmpty()) {
+            throw new EmptyAppointmentException("User appointments not found");
+        }
         return appointmentMapper.toResponseDtoSet(acceptedList);
     }
 
@@ -71,6 +76,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
                         appointmentEntity.getPsychologist().getUserId() == psychologist.getUserId() &&
                         appointmentEntity.getSoftDelete() == null)
                 .collect(Collectors.toSet());
+
+        if (acceptedList.isEmpty()) {
+            throw new EmptyAppointmentException("User appointments not found");
+        }
         return appointmentMapper.toResponseDtoSet(acceptedList);
     }
     // #######################################################################/*
@@ -84,6 +93,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new RoleMismatchException("Bad argument, user isn't a patient");
 
         Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPatient(patient);
+
+        if (appointments.isEmpty()) {
+            throw new EmptyAppointmentException("User appointments not found");
+        }
         return appointmentMapper.toResponseDtoSet(appointments);
     }
 
@@ -97,6 +110,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new RoleMismatchException("Bad argument, user isn't a psychologist");
 
         Set<AppointmentEntity> appointments = appointmentRepository.getAppointmentsByPsychologist(psychologist);
+
+        if (appointments.isEmpty()) {
+            throw new EmptyAppointmentException("User appointments not found");
+        }
         return appointmentMapper.toResponseDtoSet(appointments);
     }
 
@@ -167,7 +184,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
 
-        // Check for overlapping 
+        // Check for overlapping
         LocalDateTime appointmentStart = requestDto.date();
         LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
         LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
@@ -246,7 +263,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
 
-        // Check for overlapping 
+        // Check for overlapping
         LocalDateTime appointmentStart = requestUpdateAppointmentDto.date();
         LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
         LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
