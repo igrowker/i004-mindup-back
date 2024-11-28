@@ -88,4 +88,20 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid request");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(EmptyAppointmentsByStateException.class)
+    public ResponseEntity<Map<String, String>> handleEmptyAppointmentsByStateException(EmptyAppointmentsByStateException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "State without appointments");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

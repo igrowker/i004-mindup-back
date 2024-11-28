@@ -6,6 +6,8 @@ import com.mindup.core.entities.User;
 import com.mindup.core.enums.AppointmentStatus;
 import com.mindup.core.enums.Role;
 import com.mindup.core.exceptions.AppointmentConflictException;
+import com.mindup.core.exceptions.EmptyAppointmentsByStateException;
+import com.mindup.core.exceptions.ResourceAlreadyExistsException;
 import com.mindup.core.exceptions.ResourceNotFoundException;
 import com.mindup.core.exceptions.RoleMismatchException;
 import com.mindup.core.exceptions.UserNotFoundException;
@@ -16,6 +18,8 @@ import com.mindup.core.services.IAppointmentService;
 import com.mindup.core.validations.UserValidation;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,7 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AppointmentServiceImpl implements IAppointmentService {
     private final IAppointmentRepository appointmentRepository;
     private final AppointmentMapper appointmentMapper;
@@ -103,6 +107,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.PENDING &&
                         appointmentEntity.getSoftDelete() == null)
                 .collect(Collectors.toSet());
+
+        if (pendingList.isEmpty()) {
+            throw new EmptyAppointmentsByStateException("This appointment status doesnt have any appointment");
+        }
         return appointmentMapper.toResponseDtoSet(pendingList);
     }
 
@@ -113,6 +121,10 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.ACCEPTED &&
                         appointmentEntity.getSoftDelete() == null)
                 .collect(Collectors.toSet());
+
+        if (acceptedList.isEmpty()) {
+            throw new EmptyAppointmentsByStateException("This appointment status doesnt have any appointment");
+        }
         return appointmentMapper.toResponseDtoSet(acceptedList);
     }
 
@@ -123,10 +135,12 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.CANCELED &&
                         appointmentEntity.getSoftDelete() == null)
                 .collect(Collectors.toSet());
+
+        if (canceledList.isEmpty()) {
+            throw new EmptyAppointmentsByStateException("This appointment status doesnt have any appointment");
+        }
         return appointmentMapper.toResponseDtoSet(canceledList);
     }
-
-    // agregar checkear si el que lo crea es el de la sesion// posible, no se si es necesario
 
     @Override
     public ResponseCreateAppointmentDto add(RequestCreateAppointmentDto requestDto) {
@@ -136,8 +150,13 @@ public class AppointmentServiceImpl implements IAppointmentService {
         User psychologist = userRepository.findById(requestDto.psychologistId())
                 .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
 
+        // Checking Roles
+        if (patient.getRole() != Role.PATIENT)
+            throw new RoleMismatchException("User must be a patient to schedule an appointment");
+        if (psychologist.getRole() != Role.PSYCHOLOGIST)
+            throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
 
-        // Checking if patient already has an appointment that day
+        // Check patient's appointments on the same day
         LocalDateTime startOfDay = requestDto.date().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
@@ -147,34 +166,40 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (patientAppointmentsCount > 0) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
-        // Preguntar al front que se dedique a esto 
 
-        // Verify psychologist appointments 30 minutes before and after
-        LocalDateTime beforeAppointment = requestDto.date().minusMinutes(30);
+        // Check for overlapping 
+        LocalDateTime appointmentStart = requestDto.date();
+        LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
+        LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
 
-        long psychologistAppointmentsCount = appointmentRepository.countByPsychologistAndDateBefore(
-                psychologist, beforeAppointment);
+        // Check if psychologist has any conflicting appointments
+        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetween(
+                psychologist, bufferBefore, bufferAfter);
 
-        if (psychologistAppointmentsCount > 0) {
-            throw new AppointmentConflictException("Psychologist is not available at this time");
+        if (hasConflictingAppointments) {
+            throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
         }
 
-        // scheduling an appointment/*
-        AppointmentEntity appointmen = AppointmentEntity.builder()
+        // Scheduling an appointment
+        AppointmentEntity appointment = AppointmentEntity.builder()
                 .patient(patient)
                 .psychologist(psychologist)
                 .date(requestDto.date())
                 .status(AppointmentStatus.PENDING)
                 .build();
 
-        AppointmentEntity savedAppointment = appointmentRepository.save(appointmen);
+        AppointmentEntity savedAppointment = appointmentRepository.save(appointment);
         return appointmentMapper.appointmentToResponseCreateAppointmentDto(savedAppointment);
     }
 
     @Override
-    public ResponseAppointmentDto aceptAppointment(String appointmentId){
-        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+    public ResponseAppointmentDto aceptAppointment(String id) {
+        AppointmentEntity appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+
+        if (appointment.getStatus() == AppointmentStatus.ACCEPTED) {
+            throw new ResourceAlreadyExistsException("This appointment is already ACEPTED");
+        }
 
         appointment.setStatus(AppointmentStatus.ACCEPTED);
         appointmentRepository.save(appointment);
@@ -182,81 +207,74 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDto(appointment);
     }
 
-
     @Override
-    public ResponseAppointmentDto cancelAppointment(String appointmentId){
+    public ResponseAppointmentDto cancelAppointment(String id) {
 
-        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+        AppointmentEntity appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELED) {
+            throw new ResourceAlreadyExistsException("This appointment is already CANCELED");
+        }
 
         appointment.setStatus(AppointmentStatus.CANCELED);
         appointmentRepository.save(appointment);
 
         return appointmentMapper.toResponseDto(appointment);
     };
-    
-    // preguntar al front que se dedique a esto
+
+    //
     @Override
     public ResponseAppointmentDto update(RequestUpdateAppointmentDto requestUpdateAppointmentDto) {
-        // Checking if patient and psychologist exists
-        User patient = userRepository.findById(requestUpdateAppointmentDto.patientId())
-                .orElseThrow(() -> new UserNotFoundException("Patient not found"));
-        User psychologist = userRepository.findById(requestUpdateAppointmentDto.psychologistId())
-                .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
-
-        // Checking Roles
-        if (patient.getRole() != Role.PATIENT)
-            throw new RoleMismatchException("User must be a patient to schedule an appointment");
-        if (psychologist.getRole() == Role.PSYCHOLOGIST)
-            throw new RoleMismatchException("User must be a psychologist to schedule an appointment");
-
-        if(!userValidation.isPatient()) {
-            throw new RoleMismatchException("Only psychologists can cancel appointments");
-        }
-            
-        // Checking if appointment exists
-        AppointmentEntity updatedEntity = appointmentRepository
+        // checking if appointment exists
+        AppointmentEntity existingAppointment = appointmentRepository
                 .findById(requestUpdateAppointmentDto.appointmenId())
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
-        // Verify patient has no other appointments on the same day
+        // Find the patient and psychologist for the existing appointment
+        User patient = existingAppointment.getPatient();
+        User psychologist = existingAppointment.getPsychologist();
+
+        // Check patient appointments on the new date
         LocalDateTime startOfDay = requestUpdateAppointmentDto.date().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetweenAndIdNot(
-                patient, startOfDay, endOfDay, updatedEntity.getId());
+        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetween(
+                patient, startOfDay, endOfDay);
 
         if (patientAppointmentsCount > 0) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
 
-        // Verify psychologist availability (10 minutes before and after)
-        LocalDateTime beforeAppointment = requestUpdateAppointmentDto.date().minusMinutes(10);
-        LocalDateTime afterAppointment = requestUpdateAppointmentDto.date().plusMinutes(10);
+        // Check for overlapping 
+        LocalDateTime appointmentStart = requestUpdateAppointmentDto.date();
+        LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
+        LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
 
-        long psychologistAppointmentsCount = appointmentRepository.countByPsychologistAndDateBetweenAndIdNot(
-                psychologist, beforeAppointment, afterAppointment, updatedEntity.getId());
+        // Check if psychologist has any conflicting appointments
+        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetween(
+                psychologist, bufferBefore, bufferAfter);
 
-        if (psychologistAppointmentsCount > 0) {
-            throw new AppointmentConflictException("Psychologist is not available at this time");
+        if (hasConflictingAppointments) {
+            throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
         }
 
-        // Update appointment
-        updatedEntity.setPatient(patient);
-        updatedEntity.setPsychologist(psychologist);
-        updatedEntity.setDate(requestUpdateAppointmentDto.date());
+        // Update appointment details
+        existingAppointment.setDate(requestUpdateAppointmentDto.date());
+        AppointmentEntity updatedAppointment = appointmentRepository.save(existingAppointment);
 
-        AppointmentEntity updatedAppointment = appointmentRepository.save(updatedEntity);
         return appointmentMapper.toResponseDto(updatedAppointment);
     }
 
     @Override
-    public ResponseDeleteAppointmentDto delete(String appointmentId) {
-        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+    public ResponseDeleteAppointmentDto delete(String id) {
+        AppointmentEntity appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
         ZoneId zoneId = ZoneId.of("America/Argentina/Buenos_Aires");
         appointment.setSoftDelete(ZonedDateTime.now(zoneId).toLocalDateTime());
+
+        appointment.setStatus(AppointmentStatus.CANCELED);
 
         AppointmentEntity deletedAppointment = appointmentRepository.save(appointment);
 
@@ -268,11 +286,12 @@ public class AppointmentServiceImpl implements IAppointmentService {
     }
 
     @Override
-    public ResponseReactivateAppointmentDto reactivateAppointment(String appointmentId) {
-        AppointmentEntity appointment = appointmentRepository.findById(appointmentId)
+    public ResponseReactivateAppointmentDto reactivateAppointment(String id) {
+        AppointmentEntity appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
 
         appointment.setSoftDelete(null);
+        appointment.setStatus(AppointmentStatus.PENDING);
         AppointmentEntity reactivatedAppointment = appointmentRepository.save(appointment);
 
         return appointmentMapper.appointmentToResponseReactivateAppointmentDto(reactivatedAppointment);

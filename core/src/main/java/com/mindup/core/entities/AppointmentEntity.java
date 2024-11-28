@@ -17,14 +17,14 @@ public class AppointmentEntity {
     private String id;
 
     @ManyToOne(targetEntity = User.class,fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name = "patient_id",nullable = false,unique = true)
+    @JoinColumn(name = "patient_id",nullable = false)
     private User patient;
 
     @ManyToOne(targetEntity = User.class,fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name = "psychologist_id",nullable = false,unique = true)
+    @JoinColumn(name = "psychologist_id",nullable = false)
     private User psychologist;
 
-    @Column(name = "appointment_date",nullable = false,columnDefinition = "DATE",unique = true)
+    @Column(name = "appointment_date",nullable = false,columnDefinition = "DATE")
     private LocalDateTime date;
 
     private LocalDateTime softDelete;

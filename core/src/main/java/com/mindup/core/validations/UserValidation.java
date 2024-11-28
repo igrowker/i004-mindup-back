@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Service;
+
 @RequiredArgsConstructor
+@Service
 public class UserValidation {
 
     private final UserRepository userRepository;
