@@ -108,7 +108,7 @@ public class UserController {
         return ResponseEntity.ok("Profile image updated successfully.");
     }
 
-    @DeleteMapping("/user/{userId}/profile-image")
+    @DeleteMapping("/user/{userId}/profile-image/delete")
     public ResponseEntity<String> deleteProfileImage(@PathVariable String userId) {
         userService.deleteProfileImage(userId);
         return ResponseEntity.ok("Profile image deleted successfully.");
@@ -131,18 +131,18 @@ public class UserController {
             @PathVariable String userId,
             @Valid @RequestBody UserProfileDTO userProfileDTO) {
         UserValidation.validateUserProfile(userProfileDTO);
-        userService.updateUserProfile(userId, userProfileDTO);
+        userService.updateUserProfile(userId, userProfileDTO.getName(), userProfileDTO);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/user/professional/{id}")
-    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole (@PathVariable String id){
+    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole(@PathVariable String id) {
         userService.findProfessionalByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/user/patient/{id}")
-    public ResponseEntity<Boolean> findPatientByUserIdAndRole (@PathVariable String id) {
+    public ResponseEntity<Boolean> findPatientByUserIdAndRole(@PathVariable String id) {
         userService.findPatientByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }

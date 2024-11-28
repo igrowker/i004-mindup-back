@@ -4,12 +4,14 @@ import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.Role;
 import com.mindup.core.repositories.UserRepository;
+import com.mindup.core.enums.Gender;
 import com.mindup.core.utils.EmailUtils;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Service;
 
@@ -60,6 +62,48 @@ public class UserValidation {
                 throw new IllegalArgumentException("Invalid phone number format");
             }
         }
+        if (userProfileDTO.getBirth() != null) {
+            if (!isValidBirth(userProfileDTO.getBirth())) {
+                throw new IllegalArgumentException("Invalid birth date. It must be in the past.");
+            }
+        }
+        if (userProfileDTO.getTuition() != null && !isValidTuition(userProfileDTO.getTuition())) {
+            throw new IllegalArgumentException("Invalid tuition format. It should be alphanumeric.");
+        }
+        if (userProfileDTO.getSpecialty() != null && !isValidSpecialty(userProfileDTO.getSpecialty())) {
+            throw new IllegalArgumentException("Specialty must be a valid string with letters and spaces.");
+        }
+        if (userProfileDTO.getGender() != null && !isValidGender(userProfileDTO.getGender())) {
+            throw new IllegalArgumentException("Invalid gender. It must be 'Male' or 'Female'.");
+        }
+    }
+
+    public static boolean isValidName(String name) {
+        return name != null && name.length() >= 2;
+    }
+
+    public static boolean isValidBirth(LocalDate birth) {
+        return birth.isBefore(LocalDate.now());
+    }
+
+    public static boolean isValidTuition(String tuition) {
+        return tuition.matches("^[A-Za-z0-9]+$");
+    }
+
+    public static boolean isValidSpecialty(String specialty) {
+        return specialty.matches("^[A-Za-z\\s]+$");
+    }
+
+    public static boolean isValidGender(Gender gender) {
+        return gender == Gender.MALE || gender == Gender.FEMALE || gender == Gender.OTHER;
+    }
+
+    public static boolean isValidInformation(String information) {
+        return information.length() <= 500;
+    }
+
+    public static boolean isValidLocation(String location) {
+        return location != null && !location.trim().isEmpty();
     }
 
     // Establece el usuario actual de la sesión

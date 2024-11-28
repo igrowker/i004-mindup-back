@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException("The email " + userRegisterDTO.getEmail() + " is already in use.");
         }
 
+        UserValidation.validateUserRegister(userRegisterDTO);
         PasswordValidation.validatePassword(userRegisterDTO.getPassword());
 
         User user = userMapper.toUser(userRegisterDTO);
@@ -122,10 +123,8 @@ public class UserServiceImpl implements UserService {
     public void updateProfileImage(String userId, ProfileImageDTO profileImageDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
-
-        ProfileImageValidation.validateProfileImageUrl(profileImageDTO.getProfileImageUrl());
-
-        user.setProfileImageUrl(profileImageDTO.getProfileImageUrl());
+        ImageValidation.validateimage(profileImageDTO.getImage());
+        user.setImage(profileImageDTO.getImage());
         userRepository.save(user);
     }
 
@@ -134,8 +133,7 @@ public class UserServiceImpl implements UserService {
     public void deleteProfileImage(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
-
-        user.setProfileImageUrl(null);
+        user.setImage(null);
         userRepository.save(user);
     }
 
@@ -174,34 +172,82 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserProfile(String userId, UserProfileDTO userProfileDTO) {
+    public void updateUserProfile(String userId, String name, UserProfileDTO userProfileDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + name));
+
+        boolean isUpdated = false;
+
         if (userProfileDTO.getName() != null) {
+            if (!UserValidation.isValidName(userProfileDTO.getName())) {
+                throw new InvalidInputException("Invalid name format.");
+            }
             user.setName(userProfileDTO.getName());
+            isUpdated = true;
         }
-        if (userProfileDTO.getBirthDate() != null) {
-            user.setBirthDate(userProfileDTO.getBirthDate());
+
+        if (userProfileDTO.getBirth() != null) {
+            if (!UserValidation.isValidBirth(userProfileDTO.getBirth())) {
+                throw new InvalidInputException("Invalid birth date.");
+            }
+            user.setBirth(userProfileDTO.getBirth());
+            isUpdated = true;
+        } else if (userProfileDTO.getBirth() == null && user.getBirth() != null) {
+            throw new BirthUpdateException("Failed to update birth date for user with ID: " + name);
         }
+
         if (userProfileDTO.getGender() != null) {
+            if (!UserValidation.isValidGender(userProfileDTO.getGender())) {
+                throw new IllegalArgumentException("Invalid gender. It must be a valid Gender.");
+            }
             user.setGender(userProfileDTO.getGender());
+            isUpdated = true;
         }
+
         if (userProfileDTO.getPhone() != null) {
             UserValidation.validateUserProfile(userProfileDTO);
             user.setPhone(userProfileDTO.getPhone());
+            isUpdated = true;
         }
+
+        if (userProfileDTO.getLocation() != null) {
+            if (!UserValidation.isValidLocation(userProfileDTO.getLocation())) {
+                throw new InvalidLocationException("Invalid location format.");
+            }
+            user.setLocation(userProfileDTO.getLocation());
+            isUpdated = true;
+        }
+
         if (user.getRole() == Role.PSYCHOLOGIST) {
             if (userProfileDTO.getTuition() != null) {
+                if (!UserValidation.isValidTuition(userProfileDTO.getTuition())) {
+                    throw new InvalidInputException("Invalid tuition format.");
+                }
                 user.setTuition(userProfileDTO.getTuition());
+                isUpdated = true;
             }
             if (userProfileDTO.getSpecialty() != null) {
+                if (!UserValidation.isValidSpecialty(userProfileDTO.getSpecialty())) {
+                    throw new InvalidInputException("Invalid specialty format.");
+                }
                 user.setSpecialty(userProfileDTO.getSpecialty());
+                isUpdated = true;
             }
         }
-        if (userProfileDTO.getAboutMe() != null) {
-            user.setAboutMe(userProfileDTO.getAboutMe());
+
+        if (userProfileDTO.getInformation() != null) {
+            if (!UserValidation.isValidInformation(userProfileDTO.getInformation())) {
+                throw new InvalidInputException("Invalid information format.");
+            }
+            user.setInformation(userProfileDTO.getInformation());
+            isUpdated = true;
+        } else if (userProfileDTO.getInformation() == null && user.getInformation() != null) {
+            throw new InformationUpdateException("Failed to update 'About Me' for user with ID: " + name);
         }
-        userRepository.save(user);
+
+        if (isUpdated) {
+            userRepository.save(user);
+        }
     }
 
     @Override
@@ -230,8 +276,8 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        token = UUID.randomUUID().toString();
-        expirationDate = LocalDateTime.now().plusMinutes(15);
+        // String token = UUID.randomUUID().toString();
+        // LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
         newToken.setUser(user);
@@ -267,5 +313,4 @@ public class UserServiceImpl implements UserService {
         passwordResetTokenRepository.delete(passwordResetToken);
         return ResponseEntity.ok("Password has been reset successfully.");
     }
-
 }

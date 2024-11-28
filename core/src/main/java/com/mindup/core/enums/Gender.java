@@ -2,5 +2,6 @@ package com.mindup.core.enums;
 
 public enum Gender {
     MALE,
-    FEMALE
+    FEMALE,
+    OTHER
 }
