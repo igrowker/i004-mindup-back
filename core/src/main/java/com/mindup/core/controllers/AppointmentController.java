@@ -98,14 +98,14 @@ public class AppointmentController {
 
 
     // this is an soft delete that can be reactivated
-    @PostMapping("/deactivate/{id}")
+    @PostMapping("/{id}/deactivate")
     public ResponseEntity<ResponseDeleteAppointmentDto> deactivateAppointment(
         @PathVariable String id) {
         ResponseDeleteAppointmentDto response = iAppointmentService.delete(id);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/reactivate/{id}")
+    @PostMapping("/{id}/reactivate")
     public ResponseEntity<ResponseReactivateAppointmentDto> reactivateAppointment(
         @PathVariable String id) {
         ResponseReactivateAppointmentDto response = iAppointmentService.reactivateAppointment(id);

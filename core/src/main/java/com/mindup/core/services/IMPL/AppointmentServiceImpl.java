@@ -186,8 +186,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
 
         // Check for overlapping
         LocalDateTime appointmentStart = requestDto.date();
-        LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
-        LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
+        LocalDateTime bufferBefore = appointmentStart.minusMinutes(29);
+        LocalDateTime bufferAfter = appointmentStart.plusMinutes(29);
 
         // Check if psychologist has any conflicting appointments
         boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetween(
@@ -240,48 +240,50 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDto(appointment);
     };
 
-    //
     @Override
     public ResponseAppointmentDto update(RequestUpdateAppointmentDto requestUpdateAppointmentDto) {
-        // checking if appointment exists
+        // Obtener la cita existente
         AppointmentEntity existingAppointment = appointmentRepository
-                .findById(requestUpdateAppointmentDto.appointmenId())
+                .findById(requestUpdateAppointmentDto.id())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
-
-        // Find the patient and psychologist for the existing appointment
+    
+        // Obtener los usuarios relacionados
         User patient = existingAppointment.getPatient();
         User psychologist = existingAppointment.getPsychologist();
-
-        // Check patient appointments on the new date
+    
+        // Verificar si el paciente tiene otras citas en el mismo día
         LocalDateTime startOfDay = requestUpdateAppointmentDto.date().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-
+    
         long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetween(
                 patient, startOfDay, endOfDay);
-
-        if (patientAppointmentsCount > 0) {
+    
+        // Excluir la cita actual de la validación
+        if (patientAppointmentsCount > 1 || 
+           (patientAppointmentsCount == 1 && !existingAppointment.getDate().toLocalDate().equals(requestUpdateAppointmentDto.date().toLocalDate()))) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
-
-        // Check for overlapping
+    
+        // Verificar solapamientos para el psicólogo
         LocalDateTime appointmentStart = requestUpdateAppointmentDto.date();
-        LocalDateTime bufferBefore = appointmentStart.minusMinutes(30);
-        LocalDateTime bufferAfter = appointmentStart.plusMinutes(30);
-
-        // Check if psychologist has any conflicting appointments
-        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetween(
-                psychologist, bufferBefore, bufferAfter);
-
+        LocalDateTime bufferBefore = appointmentStart.minusMinutes(29);
+        LocalDateTime bufferAfter = appointmentStart.plusMinutes(29);
+    
+        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetweenAndIdNot(
+                psychologist, bufferBefore, bufferAfter, existingAppointment.getId());
+    
         if (hasConflictingAppointments) {
             throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
         }
-
-        // Update appointment details
+    
+        // Actualizar la cita
         existingAppointment.setDate(requestUpdateAppointmentDto.date());
+        existingAppointment.setStatus(AppointmentStatus.PENDING);
         AppointmentEntity updatedAppointment = appointmentRepository.save(existingAppointment);
-
+    
         return appointmentMapper.toResponseDto(updatedAppointment);
     }
+    
 
     @Override
     public ResponseDeleteAppointmentDto delete(String id) {
