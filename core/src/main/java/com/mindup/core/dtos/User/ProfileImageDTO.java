@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class ProfileImageDTO {
-    private String profileImageUrl;
+    private String image;
 }

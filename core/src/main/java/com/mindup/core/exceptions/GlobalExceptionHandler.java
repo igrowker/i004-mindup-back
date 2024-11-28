@@ -42,8 +42,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
-    @ExceptionHandler(ProfileImageValidationException.class)
-    public ResponseEntity<Map<String, String>> handleProfileImageValidationError(ProfileImageValidationException ex) {
+    @ExceptionHandler(ImageValidationException.class)
+    public ResponseEntity<Map<String, String>> handleProfileImageValidationError(ImageValidationException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid Profile Image");
         response.put("message", ex.getMessage());
@@ -62,6 +62,70 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleInvalidPassword(InvalidPasswordException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid Password");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Input");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidNameException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidNameException(InvalidNameException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Name");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidTuitionException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidTuitionException(InvalidTuitionException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Tuition");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidSpecialtyException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidSpecialtyException(InvalidSpecialtyException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Specialty");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(BirthUpdateException.class)
+    public ResponseEntity<Map<String, String>> handleBirthUpdateError(BirthUpdateException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Birth Date Update Error");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidGenderException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidGenderException(InvalidGenderException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Gender");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InformationUpdateException.class)
+    public ResponseEntity<Map<String, String>> handleInformationUpdateError(InformationUpdateException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "About Me Update Error");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(InvalidLocationException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidLocationException(InvalidLocationException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Location");
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
