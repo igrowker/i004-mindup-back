@@ -10,7 +10,7 @@ import lombok.Builder;
 @Builder
 public record RequestUpdateAppointmentDto(
     @NotNull(message = "El id de la cita es obligatorio")
-    String appointmenId,
+    String id,
     @NotNull(message = "La fecha es obligatoria")
     @Future
     LocalDateTime date
