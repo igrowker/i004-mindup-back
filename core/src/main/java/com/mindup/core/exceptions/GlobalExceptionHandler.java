@@ -58,6 +58,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(AppointmentConflictException.class)
+    public ResponseEntity<Map<String, String>> handleAppointmentConflictException(AppointmentConflictException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid appointment time");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handlePsychologistNotFoundException(ResourceNotFoundException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid psycholohist id");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(RoleMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleRoleMismatchException(RoleMismatchException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid role request");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<Map<String, String>> handleInvalidPassword(InvalidPasswordException ex) {
         Map<String, String> response = new HashMap<>();
@@ -74,6 +97,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(EmptyAppointmentsByStateException.class)
+    public ResponseEntity<Map<String, String>> handleEmptyAppointmentsByStateException(EmptyAppointmentsByStateException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "State without appointments");
+        response.put("message",ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(EmptyAppointmentException.class)
+    public ResponseEntity<Map<String, String>> handleEmptyAppointmentException(EmptyAppointmentException ex ){
+        Map<String , String> response = new HashMap<>();
+        response.put("error","Empty appointments");
+        response.put("message",ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+        
     @ExceptionHandler(InvalidNameException.class)
     public ResponseEntity<Map<String, String>> handleInvalidNameException(InvalidNameException ex) {
         Map<String, String> response = new HashMap<>();
@@ -129,4 +168,6 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+
 }

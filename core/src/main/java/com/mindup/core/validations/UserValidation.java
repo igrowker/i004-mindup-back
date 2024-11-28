@@ -1,12 +1,26 @@
 package com.mindup.core.validations;
 
 import com.mindup.core.dtos.User.*;
+import com.mindup.core.entities.User;
+import com.mindup.core.enums.Role;
+import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.enums.Gender;
 import com.mindup.core.utils.EmailUtils;
+
+import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.time.LocalDate;
 
+import org.springframework.stereotype.Service;
+
+@RequiredArgsConstructor
+@Service
 public class UserValidation {
+
+    private final UserRepository userRepository;
+    private User currentUser; // Almacena el usuario de la sesión actual
 
     public static void validateLoginData(UserLoginDTO loginDTO) {
         if (loginDTO.getEmail() == null || loginDTO.getEmail().isEmpty()) {
@@ -90,5 +104,36 @@ public class UserValidation {
 
     public static boolean isValidLocation(String location) {
         return location != null && !location.trim().isEmpty();
+    }
+
+    // Establece el usuario actual de la sesión
+    public boolean setCurrentUser(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        System.out.println(user);
+        if (user.isPresent()) {
+            this.currentUser = user.get();
+            return true;
+        }
+        return false;
+    }
+
+    // Obtiene el usuario autenticado actual
+    public User getCurrentUser() {
+        if (currentUser == null) {
+            throw new IllegalStateException("No hay usuario autenticado");
+        }
+        return currentUser;
+    }
+
+    public boolean isPatient() {
+        return getCurrentUser().getRole() == Role.PATIENT;
+    }
+
+    public boolean isPsychologist() {
+        return getCurrentUser().getRole() == Role.PSYCHOLOGIST;
+    }
+
+    public boolean hasRole(Role requiredRole) {
+        return getCurrentUser().getRole() == requiredRole;
     }
 }
