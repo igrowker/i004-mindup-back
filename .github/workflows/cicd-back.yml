@@ -42,28 +42,28 @@ jobs:
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
           echo "COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }}" >> .env
 
-      - name: Build Docker image for backend service
+      - name: Build Docker image for backend service core
         run: |
           docker build -f Dockerfile.core -t igrowker/i004-mindup-back-core:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-core:${{ github.sha }} igrowker/i004-mindup-back-core:latest
           docker push igrowker/i004-mindup-back-core:${{ github.sha }}
           docker push igrowker/i004-mindup-back-core:latest
 
-      - name: Build Docker image for backend service
+      - name: Build Docker image for backend service chat
         run: |
           docker build -f Dockerfile.chat -t igrowker/i004-mindup-back-chat:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-chat:${{ github.sha }} igrowker/i004-mindup-back-chat:latest
           docker push igrowker/i004-mindup-back-chat:${{ github.sha }}
           docker push igrowker/i004-mindup-back-chat:latest
 
-      - name: Build Docker image for backend service
+      - name: Build Docker image for backend service eureka
         run: |
           docker build -f Dockerfile.eureka -t igrowker/i004-mindup-back-eureka:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-eureka:${{ github.sha }} igrowker/i004-mindup-back-eureka:latest
           docker push igrowker/i004-mindup-back-eureka:${{ github.sha }}
           docker push igrowker/i004-mindup-back-eureka:latest
 
-      - name: Build Docker image for backend service
+      - name: Build Docker image for backend service gateway
         run: |
           docker build -f Dockerfile.gateway -t igrowker/i004-mindup-back-gateway:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-gateway:${{ github.sha }} igrowker/i004-mindup-back-gateway:latest
