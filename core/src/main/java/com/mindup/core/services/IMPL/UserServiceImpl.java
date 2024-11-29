@@ -68,6 +68,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<UserProfileDTO> findUserById(String userId) {
+        return userRepository.findById(userId)
+                .map(this::mapToUserProfileDTO);
+    }
+
+    private UserProfileDTO mapToUserProfileDTO(User user) {
+        UserProfileDTO profileDTO = new UserProfileDTO();
+        profileDTO.setName(user.getName());
+        profileDTO.setEmail(user.getEmail());
+        profileDTO.setRole(user.getRole());
+        profileDTO.setBirth(user.getBirth());
+        profileDTO.setAge(user.getAge());
+        profileDTO.setPhone(user.getPhone());
+        profileDTO.setLocation(user.getLocation());
+        profileDTO.setGender(user.getGender());
+        profileDTO.setInformation(user.getInformation());
+        profileDTO.setImage(user.getImage());
+
+        if (user.getRole() == Role.PSYCHOLOGIST) {
+            profileDTO.setTuition(user.getTuition());
+            profileDTO.setSpecialty(user.getSpecialty());
+        }
+        return profileDTO;
+    }
+
+    @Override
     @Transactional
     public void changePassword(String userId, String currentPassword, String newPassword) {
         System.out.println("Service invoked for userId: " + userId);
@@ -140,13 +166,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO toggleAvailability(String id) throws IOException {
-            User user = userRepository.findById(id).orElseThrow(() ->
-                    new IllegalArgumentException("Usuario no encontrado con ID: " + id));
-            user.setAvailability(!user.getAvailability());
-            var savedUser = userRepository.save(user);
-            if (user.getAvailability()){ chatFeignClient.joinProfessional(id); }
-            var response = userMapper.toUserDTO(savedUser);
-            return response;
+        User user = userRepository.findById(id).orElseThrow(()
+                -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+        user.setAvailability(!user.getAvailability());
+        var savedUser = userRepository.save(user);
+        if (user.getAvailability()) {
+            chatFeignClient.joinProfessional(id);
+        }
+        var response = userMapper.toUserDTO(savedUser);
+        return response;
     }
 
     @Transactional
@@ -158,14 +186,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean findProfessionalByUserIdAndRole(String id) {
-        userRepository.findUserByUserIdAndRole(id,Role.PSYCHOLOGIST)
+        userRepository.findUserByUserIdAndRole(id, Role.PSYCHOLOGIST)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
         return true;
     }
 
     @Override
     public Boolean findPatientByUserIdAndRole(String id) {
-        userRepository.findUserByUserIdAndRole(id,Role.PATIENT)
+        userRepository.findUserByUserIdAndRole(id, Role.PATIENT)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
         return true;
     }
@@ -278,7 +306,6 @@ public class UserServiceImpl implements UserService {
 
         // String token = UUID.randomUUID().toString();
         // LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
-
         PasswordResetToken newToken = new PasswordResetToken();
         newToken.setUser(user);
         newToken.setToken(token);

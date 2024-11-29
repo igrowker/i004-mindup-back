@@ -11,6 +11,8 @@ public interface UserService {
     UserDTO registerUser(UserRegisterDTO userRegisterDTO);
 
     Optional<UserDTO> findUserByEmail(String email);
+    
+    Optional<UserProfileDTO> findUserById(String userId);
 
     void changePassword(String userId, String currentPassword, String newPassword);
 
