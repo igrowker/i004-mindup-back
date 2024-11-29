@@ -6,15 +6,39 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
 @Repository
 public interface IAppointmentRepository extends JpaRepository<AppointmentEntity, String> {
-    // #################################################################################/*
-    // by the moment it will return an entity instead of dto, this going to be changed soon!!!/*
-    // #################################################################################/*
-    Set<AppointmentEntity> getAppointmentsByPatient (User patient);
-    Set<AppointmentEntity> getAppointmentsByPsychologist (User psychologist);
-    Optional<AppointmentEntity> findByDate(LocalDate appointmentDate);
+
+        Set<AppointmentEntity> getAppointmentsByPatient(User patient);
+
+        Set<AppointmentEntity> getAppointmentsByPsychologist(User psychologist);
+
+        Optional<AppointmentEntity> findByDate(LocalDate appointmentDate);
+
+        // count patient appointments in a date range
+        long countByPatientAndDateBetween(User patient, LocalDateTime start, LocalDateTime end);
+
+        // count psycologist appointments in an date range
+        long countByPsychologistAndDateBefore(User psychologist, LocalDateTime start);
+
+        // Count patient appointments excluding the current appointment
+        long countByPatientAndDateBetweenAndIdNot(User patient, LocalDateTime start, LocalDateTime end,
+                        String excludeAppointmentId);
+
+        // Count psychologist appointments excluding the current appointment
+        long countByPsychologistAndDateBetweenAndIdNot(User psychologist, LocalDateTime start, LocalDateTime end,
+                        String excludeAppointmentId);
+
+        boolean existsByPsychologistAndDateBetween(
+                        User psychologist,
+                        LocalDateTime start,
+                        LocalDateTime end);
+
+        boolean existsByPsychologistAndDateBetweenAndIdNot(User psychologist, LocalDateTime start, LocalDateTime end,
+                        String id);
+
 }

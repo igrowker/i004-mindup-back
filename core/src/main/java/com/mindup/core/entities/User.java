@@ -1,5 +1,6 @@
 package com.mindup.core.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mindup.core.enums.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -42,14 +43,15 @@ public class User {
 
     @Column
     private String profile;
-  
+
     private Boolean availability=false;
-  
-    @Column
-    private String profileImageUrl;
 
     @Column
-    private LocalDate birthDate;
+    private String image;
+
+    @Column
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birth;
 
     @Transient
     private int age;
@@ -73,11 +75,11 @@ public class User {
     private String specialty;
 
     @Column
-    private String aboutMe;
+    private String information;
 
     public int getAge() {
-        if (birthDate != null) {
-            return Period.between(birthDate, LocalDate.now()).getYears();
+        if (birth != null) {
+            return Period.between(birth, LocalDate.now()).getYears();
         }
         return 0;
     }
