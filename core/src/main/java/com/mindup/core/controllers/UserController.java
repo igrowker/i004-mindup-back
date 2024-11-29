@@ -5,6 +5,7 @@ import com.mindup.core.dtos.PasswordReset.PasswordResetRequestDTO;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.entities.User;
+import com.mindup.core.exceptions.UserNotFoundException;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.services.EmailVerificationService;
 import com.mindup.core.services.UserService;
@@ -120,9 +121,11 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/user/{userId}/profile")
+    @GetMapping("/user/profile/{userId}")
     public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable String userId) {
-        UserProfileDTO userProfile = userService.getUserProfile(userId);
+        UserProfileDTO userProfile = userService.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found"));
+
         return ResponseEntity.ok(userProfile);
     }
 
