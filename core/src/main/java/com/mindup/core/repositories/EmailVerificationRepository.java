@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
+public interface EmailVerificationRepository extends JpaRepository<EmailVerification, String> {
     Optional<EmailVerification> findByVerificationToken(String token);
     EmailVerification findByUser (User user);
 

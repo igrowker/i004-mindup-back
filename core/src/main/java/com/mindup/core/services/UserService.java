@@ -26,7 +26,7 @@ public interface UserService {
 
     void deleteProfileImage(String userId);
 
-    void updateUserProfile(String userId, UserProfileDTO userProfileDTO);
+    void updateUserProfile(String userId, String name, UserProfileDTO userProfileDTO);
 
     UserProfileDTO getUserProfile(String userId);
 
