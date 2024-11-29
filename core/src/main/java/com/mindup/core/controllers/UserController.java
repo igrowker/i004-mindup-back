@@ -115,7 +115,7 @@ public class UserController {
     }
 
     @PutMapping("/user/availability/{professionalId}")
-    public ResponseEntity<UserDTO> toggleAvailability(@PathVariable String professionalId) throws IOException {
+    public ResponseEntity<?> toggleAvailability(@PathVariable String professionalId) throws IOException {
         UserDTO user = userService.toggleAvailability(professionalId);
         return ResponseEntity.ok(user);
     }
