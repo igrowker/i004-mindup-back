@@ -1,5 +1,6 @@
 package com.mindup.core.security;
 
+import com.mindup.core.exceptions.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,6 +16,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -30,12 +32,19 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(String email) {
-        return generateToken(new HashMap<>(),email);
+    public String generateToken(String email, String userId, String role) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("userId", userId);
+        extraClaims.put("role", role);
+        return buildToken(extraClaims, email, jwtExpiration);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, String email) {
-        return buildToken(extraClaims, email, jwtExpiration);
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.getOrDefault("role", "UNKNOWN").toString());
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.getOrDefault("userId", "").toString());
     }
 
     public long getExpirationTime() {
@@ -57,11 +66,9 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token
-                                ) {
-        final String email = extractEmail(token);
-        return (
-                !isTokenExpired(token));
+    public boolean isTokenValid(String token, String email) {
+        final String extractedEmail = extractEmail(token);
+        return extractedEmail.equals(email) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -80,8 +87,8 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Token ha expirado");
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            throw new TokenExpiredException("Token has expired");
         }
     }
 

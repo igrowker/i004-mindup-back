@@ -115,17 +115,17 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email, "Account not found");
+            return new ResponseLoginDto(null, email, null, null);
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email, "Invalid mail or password");
+            return new ResponseLoginDto(user.getUserId(), email, null, user.getRole().toString());
         }
 
-        String token = jwtService.generateToken(email);
-        return new ResponseLoginDto(user.getUserId(), email, token);
+        String token = jwtService.generateToken(email, user.getUserId(), user.getRole().toString());
+        return new ResponseLoginDto(user.getUserId(), email, token, user.getRole().toString());
     }
 
     @Override
@@ -286,13 +286,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("No user found with this email address: " + email));
 
-        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser (user);
+        Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser(user);
         if (existingTokenOpt.isPresent()) {
             PasswordResetToken existingToken = existingTokenOpt.get();
             if (existingToken.getExpiryDate().isAfter(LocalDateTime.now())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("A password reset has already been requested." +
-                                " Please wait for the token to expire before requesting another one.");
+                        .body("A password reset has already been requested."
+                                + " Please wait for the token to expire before requesting another one.");
             } else {
                 passwordResetTokenRepository.delete(existingToken);
             }
@@ -302,7 +302,7 @@ public class UserServiceImpl implements UserService {
         LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
-        newToken.setUser (user);
+        newToken.setUser(user);
         newToken.setToken(token);
         newToken.setExpiryDate(expirationDate);
 
@@ -335,6 +335,7 @@ public class UserServiceImpl implements UserService {
         passwordResetTokenRepository.delete(passwordResetToken);
         return ResponseEntity.ok("Password has been reset successfully.");
     }
+
     private void deleteExpiredTokens() {
         LocalDateTime now = LocalDateTime.now();
         List<PasswordResetToken> expiredTokens = passwordResetTokenRepository.findAllByExpiryDateBefore(now);
