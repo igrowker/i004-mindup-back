@@ -20,6 +20,28 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Generate .env file from GitHub secrets
+        run: |
+          echo "SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}" >> .env
+          echo "EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "CHAT_HOSTNAME=${{ secrets.CHAT_HOSTNAME }}" >> .env
+          echo "CHAT_MONGO_URI=${{ secrets.CHAT_MONGO_URI }}" >> .env
+          echo "CORE_HOSTNAME=${{ secrets.CORE_HOSTNAME }}" >> .env
+          echo "CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }}" >> .env
+          echo "CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }}" >> .env
+          echo "CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }}" >> .env
+          echo "CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }}" >> .env
+          echo "GATEWAY_HOSTNAME=${{ secrets.GATEWAY_HOSTNAME }}" >> .env
+          echo "GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }}" >> .env
+          echo "GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }}" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "MONGO_DB=${{ secrets.MONGO_DB }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }}" >> .env
+
       - name: Build Docker image for backend service
         run: |
           docker build -f Dockerfile.core -t igrowker/i004-mindup-back-core:${{ github.sha }} .
@@ -60,4 +82,4 @@ jobs:
 
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
-          ssh -i mindup.pem -o StrictHostKeyChecking=no admin@${{ secrets.EC2_PUBLIC_IP }} "cd /home/admin/backend && docker-compose pull && docker-compose down && docker-compose up -d && cd /home/admin/actions-runner &&  ./run.sh"
+          ssh -i mindup.pem -o StrictHostKeyChecking=no admin@${{ secrets.EC2_PUBLIC_IP }} "cd /home/admin/backend && docker-compose --env-file .env up -d"
