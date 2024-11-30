@@ -21,6 +21,7 @@ import com.mindup.core.mappers.UserMapper;
 import com.mindup.core.validations.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +69,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<UserProfileDTO> findUserById(String userId) {
+        return userRepository.findById(userId)
+                .map(this::mapToUserProfileDTO);
+    }
+
+    private UserProfileDTO mapToUserProfileDTO(User user) {
+        UserProfileDTO profileDTO = new UserProfileDTO();
+        profileDTO.setName(user.getName());
+        profileDTO.setEmail(user.getEmail());
+        profileDTO.setRole(user.getRole());
+        profileDTO.setBirth(user.getBirth());
+        profileDTO.setAge(user.getAge());
+        profileDTO.setPhone(user.getPhone());
+        profileDTO.setLocation(user.getLocation());
+        profileDTO.setGender(user.getGender());
+        profileDTO.setInformation(user.getInformation());
+        profileDTO.setImage(user.getImage());
+
+        if (user.getRole() == Role.PSYCHOLOGIST) {
+            profileDTO.setTuition(user.getTuition());
+            profileDTO.setSpecialty(user.getSpecialty());
+        }
+        return profileDTO;
+    }
+
+    @Override
     @Transactional
     public void changePassword(String userId, String currentPassword, String newPassword) {
         System.out.println("Service invoked for userId: " + userId);
@@ -88,17 +115,17 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email, "Account not found");
+            return new ResponseLoginDto(null, email, null, null);
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email, "Invalid mail or password");
+            return new ResponseLoginDto(user.getUserId(), email, null, user.getRole().toString());
         }
 
-        String token = jwtService.generateToken(email);
-        return new ResponseLoginDto(user.getUserId(), email, token);
+        String token = jwtService.generateToken(email, user.getUserId(), user.getRole().toString());
+        return new ResponseLoginDto(user.getUserId(), email, token, user.getRole().toString());
     }
 
     @Override
@@ -140,13 +167,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO toggleAvailability(String id) throws IOException {
-            User user = userRepository.findById(id).orElseThrow(() ->
-                    new IllegalArgumentException("Usuario no encontrado con ID: " + id));
-            user.setAvailability(!user.getAvailability());
-            var savedUser = userRepository.save(user);
-            if (user.getAvailability()){ chatFeignClient.joinProfessional(id); }
-            var response = userMapper.toUserDTO(savedUser);
-            return response;
+        User user = userRepository.findById(id).orElseThrow(()
+                -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+        user.setAvailability(!user.getAvailability());
+        var savedUser = userRepository.save(user);
+        if (user.getAvailability()) {
+            chatFeignClient.joinProfessional(id);
+        }
+        var response = userMapper.toUserDTO(savedUser);
+        return response;
     }
 
     @Transactional
@@ -158,14 +187,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean findProfessionalByUserIdAndRole(String id) {
-        userRepository.findUserByUserIdAndRole(id,Role.PSYCHOLOGIST)
+        userRepository.findUserByUserIdAndRole(id, Role.PSYCHOLOGIST)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
         return true;
     }
 
     @Override
     public Boolean findPatientByUserIdAndRole(String id) {
-        userRepository.findUserByUserIdAndRole(id,Role.PATIENT)
+        userRepository.findUserByUserIdAndRole(id, Role.PATIENT)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
         return true;
     }
@@ -253,31 +282,24 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseEntity<String> requestPasswordReset(String email) {
+        deleteExpiredTokens();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con el email: " + email));
-        String token;
-        boolean tokenExists;
+                .orElseThrow(() -> new UserNotFoundException("No user found with this email address: " + email));
 
-        do {
-            token = UUID.randomUUID().toString();
-            tokenExists = passwordResetTokenRepository.findByToken(token).isPresent();
-        } while (tokenExists);
-
-        LocalDateTime expirationDate = LocalDateTime.now().plusHours(1);
         Optional<PasswordResetToken> existingTokenOpt = passwordResetTokenRepository.findByUser(user);
-
         if (existingTokenOpt.isPresent()) {
             PasswordResetToken existingToken = existingTokenOpt.get();
             if (existingToken.getExpiryDate().isAfter(LocalDateTime.now())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Ya has solicitado un restablecimiento de contraseña. Por favor, espera hasta que el token expire.");
+                        .body("A password reset has already been requested."
+                                + " Please wait for the token to expire before requesting another one.");
             } else {
                 passwordResetTokenRepository.delete(existingToken);
             }
         }
 
-        // String token = UUID.randomUUID().toString();
-        // LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
+        String token = UUID.randomUUID().toString();
+        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetToken newToken = new PasswordResetToken();
         newToken.setUser(user);
@@ -286,7 +308,7 @@ public class UserServiceImpl implements UserService {
 
         emailVerificationService.sendPasswordResetEmail(user.getEmail(), token);
 
-        return ResponseEntity.ok("Se ha enviado un correo para restablecer la contraseña.");
+        return ResponseEntity.ok("An email has been sent to reset your password.");
     }
 
     @Override
@@ -312,5 +334,13 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);
         return ResponseEntity.ok("Password has been reset successfully.");
+    }
+
+    private void deleteExpiredTokens() {
+        LocalDateTime now = LocalDateTime.now();
+        List<PasswordResetToken> expiredTokens = passwordResetTokenRepository.findAllByExpiryDateBefore(now);
+        if (!expiredTokens.isEmpty()) {
+            passwordResetTokenRepository.deleteAll(expiredTokens);
+        }
     }
 }
