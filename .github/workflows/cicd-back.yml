@@ -72,6 +72,7 @@ jobs:
             CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }} \
             CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }} \
             CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }} \
+            CORE_JWT_EXPIRATION_TIME=${{ secrets.CORE_JWT_EXPIRATION_TIME}} \
             MONGO_DB=${{ secrets.MONGO_DB }} \
             MONGO_USER=${{ secrets.MONGO_USER }} \
             MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
