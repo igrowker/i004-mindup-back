@@ -20,51 +20,24 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Generate .env file from GitHub secrets
-        run: |
-          echo "SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}" >> .env
-          echo "EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }}" >> .env
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-          echo "CHAT_HOSTNAME=${{ secrets.CHAT_HOSTNAME }}" >> .env
-          echo "CHAT_MONGO_URI=${{ secrets.CHAT_MONGO_URI }}" >> .env
-          echo "CORE_HOSTNAME=${{ secrets.CORE_HOSTNAME }}" >> .env
-          echo "CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }}" >> .env
-          echo "CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }}" >> .env
-          echo "CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }}" >> .env
-          echo "CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }}" >> .env
-          echo "GATEWAY_HOSTNAME=${{ secrets.GATEWAY_HOSTNAME }}" >> .env
-          echo "GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }}" >> .env
-          echo "GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }}" >> .env
-          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
-          echo "MONGO_DB=${{ secrets.MONGO_DB }}" >> .env
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-          echo "COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }}" >> .env
-
-      - name: Build Docker image for backend service core
+      # Build Docker images for backend services
+      - name: Build and Push Docker images for backend services
         run: |
           docker build -f Dockerfile.core -t igrowker/i004-mindup-back-core:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-core:${{ github.sha }} igrowker/i004-mindup-back-core:latest
           docker push igrowker/i004-mindup-back-core:${{ github.sha }}
           docker push igrowker/i004-mindup-back-core:latest
 
-      - name: Build Docker image for backend service chat
-        run: |
           docker build -f Dockerfile.chat -t igrowker/i004-mindup-back-chat:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-chat:${{ github.sha }} igrowker/i004-mindup-back-chat:latest
           docker push igrowker/i004-mindup-back-chat:${{ github.sha }}
           docker push igrowker/i004-mindup-back-chat:latest
 
-      - name: Build Docker image for backend service eureka
-        run: |
           docker build -f Dockerfile.eureka -t igrowker/i004-mindup-back-eureka:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-eureka:${{ github.sha }} igrowker/i004-mindup-back-eureka:latest
           docker push igrowker/i004-mindup-back-eureka:${{ github.sha }}
           docker push igrowker/i004-mindup-back-eureka:latest
 
-      - name: Build Docker image for backend service gateway
-        run: |
           docker build -f Dockerfile.gateway -t igrowker/i004-mindup-back-gateway:${{ github.sha }} .
           docker tag igrowker/i004-mindup-back-gateway:${{ github.sha }} igrowker/i004-mindup-back-gateway:latest
           docker push igrowker/i004-mindup-back-gateway:${{ github.sha }}
@@ -80,6 +53,38 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > mindup.pem
           chmod 600 mindup.pem
 
+      - name: Copy Docker Compose to EC2
+        run: |
+          scp -i mindup.pem -o StrictHostKeyChecking=no docker-compose.yml admin@${{ secrets.EC2_PUBLIC_IP }}:/home/admin/backend/
+
+
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
-          ssh -i mindup.pem -o StrictHostKeyChecking=no admin@${{ secrets.EC2_PUBLIC_IP }} "cd /home/admin/backend && docker-compose pull && docker-compose down && docker-compose up -d && cd /home/admin/actions-runner && ./run.sh"
+          # Ejecutar Docker Compose pasando las variables de entorno directamente
+          ssh -i mindup.pem -o StrictHostKeyChecking=no admin@${{ secrets.EC2_PUBLIC_IP }} "
+            cd /home/admin/backend && 
+            sudo docker-compose pull && 
+            sudo docker-compose down && 
+            sudo SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
+            EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }} \
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+            CHAT_HOSTNAME=${{ secrets.CHAT_HOSTNAME }} \
+            CHAT_MONGO_URI=${{ secrets.CHAT_MONGO_URI }} \
+            CORE_HOSTNAME=${{ secrets.CORE_HOSTNAME }} \
+            CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }} \
+            CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }} \
+            CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }} \
+            CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }} \
+            GATEWAY_HOSTNAME=${{ secrets.GATEWAY_HOSTNAME }} \
+            GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }} \
+            GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }} \
+            MONGO_URI=${{ secrets.MONGO_URI }} \
+            MONGO_DB=${{ secrets.MONGO_DB }} \
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }} \
+            sudo docker-compose up -d && 
+            cd /home/admin/actions-runner && 
+            ./run.sh
+          "
