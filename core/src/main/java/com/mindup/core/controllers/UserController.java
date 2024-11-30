@@ -36,13 +36,10 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<ResponseLoginDto> loginUser(@RequestBody @Valid UserLoginDTO loginDTO) {
-
         ResponseLoginDto responseLoginDto = userService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
 
         if (responseLoginDto != null) {
-            // Obtener el usuario autenticado
             Optional<User> userOptional = userRepository.findByEmail(loginDTO.getEmail());
-
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 EmailVerification emailVerification = emailVerificationService.findByUser(user);
@@ -50,13 +47,13 @@ public class UserController {
                 if (emailVerification != null && emailVerification.isVerified()) {
                     return ResponseEntity.ok(responseLoginDto);
                 } else {
-                    return ResponseEntity.status(403).body(new ResponseLoginDto(null, null, "Account not verified. Please verify your email first."));
+                    return ResponseEntity.status(403).body(new ResponseLoginDto(null, null, "Account not verified. Please verify your email first.", null));
                 }
             } else {
-                return ResponseEntity.status(404).body(new ResponseLoginDto(null, null, "User  not found."));
+                return ResponseEntity.status(404).body(new ResponseLoginDto(null, null, "User not found.", null));
             }
         } else {
-            return ResponseEntity.status(401).body(new ResponseLoginDto(null, null, "Invalid credentials."));
+            return ResponseEntity.status(401).body(new ResponseLoginDto(null, null, "Invalid credentials.", null));
         }
     }
 
