@@ -53,9 +53,12 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > mindup.pem
           chmod 600 mindup.pem
 
+      - name: List files
+        run: ls -la
+
       - name: Copy Docker Compose to EC2
         run: |
-          scp -i mindup.pem -o StrictHostKeyChecking=no docker-compose.yml admin@${{ secrets.EC2_PUBLIC_IP }}:/home/admin/backend/
+          scp -i mindup.pem -o StrictHostKeyChecking=no ./docker-compose.yml admin@${{ secrets.EC2_PUBLIC_IP }}:/home/admin/backend/
 
 
       - name: Deploy Backend on EC2 with Docker Compose
