@@ -43,6 +43,7 @@ public class AvailabilityScheduler {
                         && register.getProfessionalId() == null) {
                     temporalChatRepository.delete(register);
                 }
+                System.out.println("no entre al if");
                 if (register.getProfessionalId() != null) {
                     Message message = new Message();
                     message.setPatientId(register.getPatientId());
@@ -53,6 +54,7 @@ public class AvailabilityScheduler {
                             + message.getPatientId() + " y profesional " + message.getProfessionalId());
                     messageRepository.save(message);
                     temporalChatRepository.delete(register);
+                    System.out.println("saliendo del if");
                 }
             }
     }
