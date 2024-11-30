@@ -15,11 +15,9 @@ import com.mindup.chat.repositories.AvailablePsychologistsRepository;
 import com.mindup.chat.repositories.MessageRepository;
 import com.mindup.chat.repositories.TemporalChatRepository;
 import com.mindup.chat.services.MessageService;
-import com.mindup.chat.utils.AvailabilityScheduler;
 import com.mindup.chat.utils.Scraper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +25,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
 
 @Service
