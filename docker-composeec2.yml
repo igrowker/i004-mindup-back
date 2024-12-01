@@ -29,12 +29,10 @@ services:
       - MONGO_USER=${MONGO_USER}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_HOST=${MONGO_HOST}
-
     networks:
       - mindup-network
     depends_on:
       - eureka
-      - mongo
     restart: always
 
   core:
@@ -57,7 +55,6 @@ services:
       - mindup-network
     depends_on:
       - eureka
-      - postgres
     restart: always
 
   gateway:
@@ -79,40 +76,6 @@ services:
       - eureka
     restart: always
 
-  mongo:
-    image: mongo:latest
-    container_name: mindup-mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - mindup-network
-    volumes:
-      - mindup-mongo-data:/data/db
-    restart: always
-
-  postgres:
-    image: postgres:latest
-    container_name: mindup-postgres
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/mindupdb
-    ports:
-      - "5432:5432"
-    networks:
-      - mindup-network
-    volumes:
-      - mindup-postgres-data:/var/lib/postgresql/data
-    restart: always
-
 networks:
   mindup-network:
     driver: bridge
-
-volumes:
-  mindup-mongo-data:
-    driver: local
-  mindup-postgres-data:
-    driver: local
-

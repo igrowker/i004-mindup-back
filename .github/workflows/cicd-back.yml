@@ -46,8 +46,11 @@ jobs:
   deploy-to-ec2:
     needs: build-and-push
     runs-on: ubuntu-latest
-
+    
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+    
       - name: Set up SSH key
         run: |
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > mindup.pem
@@ -68,6 +71,7 @@ jobs:
             cd /home/admin/backend && 
             sudo docker-compose pull && 
             sudo docker-compose down && 
+            sudo docker system prune -f &&
             sudo SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
             EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }} \
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
