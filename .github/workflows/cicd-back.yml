@@ -67,10 +67,7 @@ jobs:
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
           # Ejecutar Docker Compose pasando las variables de entorno directamente
-          cd /home/admin/backend && 
-          sudo docker compose -f docker-composeec2.yml pull && 
-          sudo docker compose down && 
-          sudo docker system prune -f &&
+          # Pasar las variables de entorno antes de ejecutar Docker Compose
           SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
           EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }} \
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
@@ -89,4 +86,8 @@ jobs:
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
           POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
           COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }} \
+          cd /home/admin/backend && 
+          sudo docker-compose -f docker-composeec2.yml pull && 
+          sudo docker-compose down && 
+          sudo docker system prune -f &&
           sudo docker-compose up -d
