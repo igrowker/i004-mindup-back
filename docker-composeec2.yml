@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.eureka
     container_name: mindup-eureka
+    image: igrowker/i004-mindup-back-eureka
     ports:
       - "8761:8761"
     environment:
@@ -19,6 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile.chat
     container_name: mindup-chat
+    image:igrowker/i004-mindup-back-chat   
     ports:
       - "8088:8088"
     environment:
@@ -40,6 +42,7 @@ services:
       context: .
       dockerfile: Dockerfile.core
     container_name: mindup-core
+    image: igrowker/i004-mindup-back-core
     ports:
       - "8089:8089"
     environment:
@@ -62,6 +65,7 @@ services:
       context: .
       dockerfile: Dockerfile.gateway
     container_name: mindup-gateway
+    iamge: igrowker/i004-mindup-back-gateway
     ports:
       - "8090:8090"
     environment:
