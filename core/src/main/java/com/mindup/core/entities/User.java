@@ -44,7 +44,7 @@ public class User {
     @Column
     private String profile;
 
-    private Boolean availability=false;
+    private Boolean availability = false;
 
     @Column
     private String image;
@@ -77,6 +77,9 @@ public class User {
     @Column
     private String information;
 
+    @Column
+    private String video;
+
     public int getAge() {
         if (birth != null) {
             return Period.between(birth, LocalDate.now()).getYears();
@@ -100,4 +103,11 @@ public class User {
         }
     }
 
+    public void setVideo(String video) {
+        if (this.role == Role.PSYCHOLOGIST) {
+            this.video = video;
+        } else {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can set a video.");
+        }
+    }
 }
