@@ -45,7 +45,7 @@ jobs:
 
   deploy-to-ec2:
     needs: build-and-push
-    runs-on: [self-hosted , backend-deploy]
+    runs-on: [self-hosted, backend-deploy]
     
     steps:
       - name: Check out code
@@ -61,27 +61,26 @@ jobs:
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
           # Ejecutar Docker Compose pasando las variables de entorno directamente
-            cd /home/admin/backend && 
-            docker-compose pull && 
-            docker-compose down && 
-            docker system prune -f &&
-            SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
-            EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }} \
-            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-            CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }} \
-            CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }} \
-            CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }} \
-            CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }} \
-            CORE_JWT_EXPIRATION_TIME=${{ secrets.CORE_JWT_EXPIRATION_TIME}} \
-            MONGO_DB=${{ secrets.MONGO_DB }} \
-            MONGO_USER=${{ secrets.MONGO_USER }} \
-            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
-            MONGO_HOST=${{ secrets.MONGO_HOST }} \
-            GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }} \
-            GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }} \
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
-            COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }} \
-            docker-compose up -d 
-          "
+          cd /home/admin/backend && 
+          sudo docker-compose pull && 
+          sudo docker-compose down && 
+          sudo docker system prune -f &&
+          SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
+          EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }} \
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+          CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }} \
+          CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }} \
+          CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }} \
+          CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }} \
+          CORE_JWT_EXPIRATION_TIME=${{ secrets.CORE_JWT_EXPIRATION_TIME }} \
+          MONGO_DB=${{ secrets.MONGO_DB }} \
+          MONGO_USER=${{ secrets.MONGO_USER }} \
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+          MONGO_HOST=${{ secrets.MONGO_HOST }} \
+          GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }} \
+          GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }} \
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+          COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }} \
+          sudo docker-compose up -d
