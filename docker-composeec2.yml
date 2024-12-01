@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.eureka
     container_name: mindup-eureka
+    image: igrowker/i004-mindup-back-eureka
     ports:
       - "8761:8761"
     environment:
@@ -19,6 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile.chat
     container_name: mindup-chat
+    image:igrowker/i004-mindup-back-chat   
     ports:
       - "8088:8088"
     environment:
@@ -29,12 +31,10 @@ services:
       - MONGO_USER=${MONGO_USER}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_HOST=${MONGO_HOST}
-
     networks:
       - mindup-network
     depends_on:
       - eureka
-      - mongo
     restart: always
 
   core:
@@ -42,6 +42,7 @@ services:
       context: .
       dockerfile: Dockerfile.core
     container_name: mindup-core
+    image: igrowker/i004-mindup-back-core
     ports:
       - "8089:8089"
     environment:
@@ -57,7 +58,6 @@ services:
       - mindup-network
     depends_on:
       - eureka
-      - postgres
     restart: always
 
   gateway:
@@ -65,6 +65,7 @@ services:
       context: .
       dockerfile: Dockerfile.gateway
     container_name: mindup-gateway
+    iamge: igrowker/i004-mindup-back-gateway
     ports:
       - "8090:8090"
     environment:
@@ -79,40 +80,6 @@ services:
       - eureka
     restart: always
 
-  mongo:
-    image: mongo:latest
-    container_name: mindup-mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - mindup-network
-    volumes:
-      - mindup-mongo-data:/data/db
-    restart: always
-
-  postgres:
-    image: postgres:latest
-    container_name: mindup-postgres
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/mindupdb
-    ports:
-      - "5432:5432"
-    networks:
-      - mindup-network
-    volumes:
-      - mindup-postgres-data:/var/lib/postgresql/data
-    restart: always
-
 networks:
   mindup-network:
     driver: bridge
-
-volumes:
-  mindup-mongo-data:
-    driver: local
-  mindup-postgres-data:
-    driver: local
-
