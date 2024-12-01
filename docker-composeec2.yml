@@ -1,10 +1,7 @@
 services:
   eureka:
-    build:
-      context: .
-      dockerfile: Dockerfile.eureka
+    image: igrowker/i004-mindup-back-eureka:latest  # Imagen desde Docker Hub
     container_name: mindup-eureka
-    image: igrowker/i004-mindup-back-eureka
     ports:
       - "8761:8761"
     environment:
@@ -16,11 +13,8 @@ services:
     restart: always
   
   chat:
-    build:
-      context: .
-      dockerfile: Dockerfile.chat
+    image: igrowker/i004-mindup-back-chat:latest  # Imagen desde Docker Hub
     container_name: mindup-chat
-    image:igrowker/i004-mindup-back-chat   
     ports:
       - "8088:8088"
     environment:
@@ -38,11 +32,8 @@ services:
     restart: always
 
   core:
-    build:
-      context: .
-      dockerfile: Dockerfile.core
+    image: igrowker/i004-mindup-back-core:latest  # Imagen desde Docker Hub
     container_name: mindup-core
-    image: igrowker/i004-mindup-back-core
     ports:
       - "8089:8089"
     environment:
@@ -61,11 +52,8 @@ services:
     restart: always
 
   gateway:
-    build:
-      context: .
-      dockerfile: Dockerfile.gateway
+    image: igrowker/i004-mindup-back-gateway:latest  # Imagen desde Docker Hub
     container_name: mindup-gateway
-    iamge: igrowker/i004-mindup-back-gateway
     ports:
       - "8090:8090"
     environment:
