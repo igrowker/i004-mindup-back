@@ -1,5 +1,6 @@
 package com.mindup.core.services.IMPL;
 
+import com.mindup.core.validations.VideoValidation;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.PasswordResetToken;
@@ -90,6 +91,7 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.PSYCHOLOGIST) {
             profileDTO.setTuition(user.getTuition());
             profileDTO.setSpecialty(user.getSpecialty());
+            profileDTO.setVideo(user.getVideo());
         }
         return profileDTO;
     }
@@ -342,5 +344,34 @@ public class UserServiceImpl implements UserService {
         if (!expiredTokens.isEmpty()) {
             passwordResetTokenRepository.deleteAll(expiredTokens);
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileVideo(String userId, ProfileVideoDTO profileVideoDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
+        if (user.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can have a video.");
+        }
+
+        VideoValidation.validateVideo(profileVideoDTO.getVideo());
+        user.setVideo(profileVideoDTO.getVideo());
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProfileVideo(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
+        if (user.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can have a video.");
+        }
+
+        user.setVideo(null);
+        userRepository.save(user);
     }
 }
