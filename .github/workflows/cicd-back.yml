@@ -56,7 +56,7 @@ jobs:
 
       - name: Copy Docker Compose to EC2
         run: |
-          wget https://raw.githubusercontent.com/igrowker/i004-mindup-back/develop/docker-compose.yml -O /home/admin/backend/docker-compose.yml
+          wget https://raw.githubusercontent.com/igrowker/i004-mindup-back/develop/docker-composeec2.yml -O /home/admin/backend/docker-composeec2.yml
 
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
