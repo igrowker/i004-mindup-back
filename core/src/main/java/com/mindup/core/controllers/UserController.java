@@ -219,14 +219,22 @@ public class UserController {
         return ResponseEntity.ok("Profile video deleted successfully.");
     }
 
-    @PostMapping("/search-psychologists")
-    public ResponseEntity<List<User>> searchPsychologists(
-            @PathVariable String userId,
+    @PostMapping("/search-preference-psychologists")
+    public ResponseEntity<?> searchPsychologists(
             @RequestBody PatientPreferencesDTO preferencesDTO,
             HttpServletRequest request) {
-        validateUserId(request, userId, "PATIENT");
+        String token = request.getHeader("Authorization").substring(7);
+        String currentUserRole = jwtService.extractRole(token);
+        if (!"PATIENT".equals(currentUserRole)) {
+            throw new SecurityException("Access is denied for this role.");
+        }
         patientService.validatePreferences(preferencesDTO);
         List<User> psychologists = patientService.searchPsychologists(preferencesDTO);
+        if (psychologists.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No psychologists were found with the requested preferences");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
         return ResponseEntity.ok(psychologists);
     }
 }
