@@ -3,6 +3,7 @@ package com.mindup.core.controllers;
 import com.mindup.core.dtos.PasswordReset.*;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.*;
+import com.mindup.core.enums.Role;
 import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
@@ -236,5 +237,39 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.ok(psychologists);
+    }
+
+    @PostMapping("/view-psychologists")
+    public ResponseEntity<?> viewPsychologists(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        String currentUserRole = jwtService.extractRole(token);
+        if (!"PATIENT".equals(currentUserRole)) {
+            throw new SecurityException("Access is denied for this role.");
+        }
+        List<User> psychologists = userRepository.findByRole(Role.PSYCHOLOGIST);
+        if (psychologists.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No psychologists found in the database.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        return ResponseEntity.ok(psychologists);
+    }
+
+    @PostMapping("/view-patients")
+    public ResponseEntity<?> viewPatients(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        String currentUserRole = jwtService.extractRole(token);
+        if (!"PSYCHOLOGIST".equals(currentUserRole)) {
+            throw new SecurityException("Access is denied for this role.");
+        }
+        List<User> patients = userRepository.findByRole(Role.PATIENT);
+        if (patients.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No patients found in the database.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        return ResponseEntity.ok(patients);
     }
 }

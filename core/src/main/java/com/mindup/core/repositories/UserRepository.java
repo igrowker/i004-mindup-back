@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u WHERE u.role = 'PSYCHOLOGIST' AND u.gender = :gender")
     List<User> findPsychologistsByGender(@Param("gender") Gender gender);
+    
+    List<User> findByRole(Role role);
 }
