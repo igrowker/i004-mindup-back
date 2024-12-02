@@ -44,7 +44,11 @@ public class JwtService {
     }
 
     public String extractUserId(String token) {
-        return extractClaim(token, claims -> claims.getOrDefault("userId", "").toString());
+        String userId = extractClaim(token, claims -> claims.getOrDefault("userId", "").toString());
+        if (userId == null || userId.isEmpty()) {
+            throw new SecurityException("Invalid token: does not contain a user ID.");
+        }
+        return userId;
     }
 
     public boolean isTokenValid(String token, String email) {
