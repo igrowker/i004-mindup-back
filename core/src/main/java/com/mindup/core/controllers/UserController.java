@@ -222,6 +222,7 @@ public class UserController {
             @RequestBody PatientPreferencesDTO preferencesDTO,
             HttpServletRequest request) {
         validateUserId(request, null, "PATIENT");
+        patientService.validatePreferences(preferencesDTO);
         List<User> psychologists = patientService.searchPsychologists(preferencesDTO);
         return ResponseEntity.ok(psychologists);
     }
