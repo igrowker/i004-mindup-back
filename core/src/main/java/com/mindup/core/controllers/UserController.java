@@ -150,9 +150,7 @@ public class UserController {
 
     @GetMapping("/user/profile/{userId}")
     public ResponseEntity<UserProfileDTO> getUserProfileById(
-            @PathVariable String userId,
-            HttpServletRequest request) {
-        validateUserId(request, userId, null);
+            @PathVariable String userId) {
         UserProfileDTO userProfile = userService.findUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found"));
         return ResponseEntity.ok(userProfile);
