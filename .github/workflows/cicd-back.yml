@@ -71,24 +71,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
      
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
     
       - name: List files
         run: ls -la
 
-      - name: Copy Docker Compose to EC2
-        run: |
-          wget https://raw.githubusercontent.com/igrowker/i004-mindup-back/develop/docker-composeec2.yml -O /home/admin/backend/docker-composeec2.yml
 
       - name: Deploy Backend on EC2 with Docker Compose
         run: |
           # Ejecutar Docker Compose pasando las variables de entorno directamente
-          cd /home/admin/backend && \
-          sudo docker-compose -f docker-composeec2.yml pull && \
           sudo docker-compose down && \
           sudo docker system prune -f && \
+          sudo docker-compose -f docker-composeec2.yml pull && \
           sudo docker-compose up -d
