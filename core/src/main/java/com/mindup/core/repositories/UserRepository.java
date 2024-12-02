@@ -2,6 +2,7 @@ package com.mindup.core.repositories;
 
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.*;
+import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,8 +17,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.id = :userId AND u.role = :role")
     Optional<User> findUserByUserIdAndRole(String userId, Role role);
 
-    @Query("SELECT u FROM User u WHERE u.role = 'PSYCHOLOGIST' "
-            + "AND (:isBelow35 IS NULL OR (:isBelow35 = true AND u.age < 35) OR (:isBelow35 = false AND u.age >= 35)) "
-            + "AND (:gender IS NULL OR u.gender = :gender)")
-    List<User> findPsychologistsByPreferences(Boolean isBelow35, Gender gender);
+    @Query("SELECT u FROM User u WHERE u.preferences = :preferences AND u.gender = :gender")
+    List<User> findPsychologistsByPreferences(@Param("preferences") Boolean preferences, @Param("gender") Gender gender);
 }
