@@ -8,6 +8,7 @@ import com.mindup.core.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientService {
@@ -28,8 +29,15 @@ public class PatientService {
     }
 
     public List<User> searchPsychologists(PatientPreferencesDTO preferencesDTO) {
-        Boolean isBelow35 = preferencesDTO.getIsBelow35();
         Gender gender = preferencesDTO.getGender();
-        return userRepository.findPsychologistsByPreferences(isBelow35, gender);
+        Boolean isBelow35 = preferencesDTO.getIsBelow35();
+
+        List<User> psychologists = userRepository.findPsychologistsByGender(gender);
+
+        return psychologists.stream()
+                .filter(p -> (isBelow35 == null
+                || (isBelow35 && p.getAge() < 35)
+                || (!isBelow35 && p.getAge() >= 35)))
+                .collect(Collectors.toList());
     }
 }
