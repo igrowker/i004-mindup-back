@@ -18,7 +18,6 @@ import com.mindup.chat.services.MessageService;
 import com.mindup.chat.utils.Scraper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,7 +32,6 @@ public class MessageServiceImpl implements MessageService {
 
     private final Scraper scraper;
     private final TemporalChatRepository temporalChatRepository;
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final Queue<String> professionalQueue = new LinkedList<>();
     private final AvailablePsychologistsRepository availablePsychologistsRepository;
     private final TemporalChatMapper temporalChatMapper;
@@ -55,8 +53,6 @@ public class MessageServiceImpl implements MessageService {
         professional.setTimestamp(LocalDateTime.now());
         availablePsychologistsRepository.save(professional);
         professionalQueue.add(professionalId);
-        simpMessagingTemplate.convertAndSendToUser(professionalId, "/queue/notifications",
-                "Ahora estás disponible para la asistencia por chat.");
     }
 
     //Endpoint 2: Setea un temporalChat y le pasa a front las ids antes de dejar la de professional nula (por el scheduler). Deshabilita al profesional SIEMPRE
@@ -64,7 +60,6 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     @Override
     public TemporalChatDto requestChat(String patientId) throws IOException {
-        //TODO. validar id de patient -> ULI. Otro Feign que en lugar de buscar por psico busque por paciente.
         try {
             coreFeignClient.findPatientByUserIdAndRole(patientId);//si no pongo el runtimeexception no lo toma
         }catch (RuntimeException e){ //agregar exception que no es el mismo usuario el que hace la petixion con el id
@@ -98,7 +93,6 @@ public class MessageServiceImpl implements MessageService {
         }catch (RuntimeException e){ //agregar exception que no es el mismo usuario el que hace la petixion con el id
             throw new ResourceNotFoundException("No existe el id del usuario.");
         }
-        //validar temporalChat
         TemporalChat temporalChat = temporalChatRepository.findById(temporalChatDto.temporalChatId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chat not found with id: " + temporalChatDto.temporalChatId()));
         temporalChat.setProfessionalId(temporalChatDto.professionalId());
