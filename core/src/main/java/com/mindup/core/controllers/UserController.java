@@ -3,11 +3,11 @@ package com.mindup.core.controllers;
 import com.mindup.core.dtos.PasswordReset.*;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.*;
-import com.mindup.core.exceptions.UserNotFoundException;
+import com.mindup.core.exceptions.*;
 import com.mindup.core.repositories.UserRepository;
 import com.mindup.core.security.JwtService;
 import com.mindup.core.services.*;
-import com.mindup.core.validations.UserValidation;
+import com.mindup.core.utils.UserValidationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final PatientService patientService;
     private final JwtService jwtService;
+    private final UserValidationUtil userValidationUtil;
 
     private void validateUserId(HttpServletRequest request, String userId, String expectedRole) {
         String token = request.getHeader("Authorization").substring(7);
@@ -82,10 +83,14 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody ChangePasswordDTO changePasswordDTO,
             HttpServletRequest request) {
-        validateUserId(request, userId, null);
         try {
+            userValidationUtil.validateUserId(request, userId, null);
             userService.changePassword(userId, changePasswordDTO.getCurrentPassword(), changePasswordDTO.getNewPassword());
             return ResponseEntity.ok("Password updated successfully.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        } catch (InvalidPasswordException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid current password.");
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
@@ -125,7 +130,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody @Valid ProfileImageDTO profileImageDTO,
             HttpServletRequest request) {
-        validateUserId(request, userId, null);
+        userValidationUtil.validateUserId(request, userId, null);
         userService.updateProfileImage(userId, profileImageDTO);
         return ResponseEntity.ok("Profile image updated successfully.");
     }
@@ -134,7 +139,7 @@ public class UserController {
     public ResponseEntity<String> deleteProfileImage(
             @PathVariable String userId,
             HttpServletRequest request) {
-        validateUserId(request, userId, null);
+        userValidationUtil.validateUserId(request, userId, null);
         userService.deleteProfileImage(userId);
         return ResponseEntity.ok("Profile image deleted successfully.");
     }
@@ -157,14 +162,13 @@ public class UserController {
     }
 
     @PutMapping("/user/{userId}/profile")
-    public ResponseEntity<Void> updateUserProfile(
+    public ResponseEntity<String> updateUserProfile(
             @PathVariable String userId,
             @Valid @RequestBody UserProfileDTO userProfileDTO,
             HttpServletRequest request) {
-        validateUserId(request, userId, null);
-        UserValidation.validateUserProfile(userProfileDTO);
+        userValidationUtil.validateUserId(request, userId, null);
         userService.updateUserProfile(userId, userProfileDTO.getName(), userProfileDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Profile updated successfully.");
     }
 
     @GetMapping("/user/professional/{id}")
@@ -201,7 +205,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody @Valid ProfileVideoDTO profileVideoDTO,
             HttpServletRequest request) {
-        validateUserId(request, userId, "PSYCHOLOGIST");
+        userValidationUtil.validateUserId(request, userId, "PSYCHOLOGIST");
         userService.updateProfileVideo(userId, profileVideoDTO);
         return ResponseEntity.ok("Profile video updated successfully.");
     }
@@ -210,16 +214,17 @@ public class UserController {
     public ResponseEntity<String> deleteProfileVideo(
             @PathVariable String userId,
             HttpServletRequest request) {
-        validateUserId(request, userId, "PSYCHOLOGIST");
+        userValidationUtil.validateUserId(request, userId, "PSYCHOLOGIST");
         userService.deleteProfileVideo(userId);
         return ResponseEntity.ok("Profile video deleted successfully.");
     }
 
     @PostMapping("/search-psychologists")
     public ResponseEntity<List<User>> searchPsychologists(
+            @PathVariable String userId,
             @RequestBody PatientPreferencesDTO preferencesDTO,
             HttpServletRequest request) {
-        validateUserId(request, null, "PATIENT");
+        validateUserId(request, userId, "PATIENT");
         patientService.validatePreferences(preferencesDTO);
         List<User> psychologists = patientService.searchPsychologists(preferencesDTO);
         return ResponseEntity.ok(psychologists);
