@@ -12,7 +12,10 @@ import com.mindup.core.utils.UserValidationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.*;
@@ -146,12 +149,24 @@ public class UserController {
     }
 
     @PutMapping("/user/availability/{professionalId}")
-    public ResponseEntity<?> toggleAvailability(
-            @PathVariable String professionalId,
-            HttpServletRequest request) throws IOException {
-        validateUserId(request, professionalId, "PSYCHOLOGIST");
-        UserDTO user = userService.toggleAvailability(professionalId);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> toggleAvailability(@PathVariable String professionalId) {
+        try {
+            UserDTO user = userService.toggleAvailability(professionalId);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse() {
+                        @Override
+                        public HttpStatusCode getStatusCode() {
+                            return null;
+                        }
+
+                        @Override
+                        public ProblemDetail getBody() {
+                            return null;
+                        }
+                    });
+        }
     }
 
     @GetMapping("/user/profile/{userId}")
@@ -173,19 +188,13 @@ public class UserController {
     }
 
     @GetMapping("/user/professional/{id}")
-    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole(
-            @PathVariable String id,
-            HttpServletRequest request) {
-        validateUserId(request, id, "PSYCHOLOGIST");
+    public ResponseEntity<Boolean> findProfessionalByUserIdAndRole(@PathVariable String id) {
         userService.findProfessionalByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/user/patient/{id}")
-    public ResponseEntity<Boolean> findPatientByUserIdAndRole(
-            @PathVariable String id,
-            HttpServletRequest request) {
-        validateUserId(request, id, "PATIENT");
+    public ResponseEntity<Boolean> findPatientByUserIdAndRole(@PathVariable String id) {
         userService.findPatientByUserIdAndRole(id);
         return ResponseEntity.ok().build();
     }
