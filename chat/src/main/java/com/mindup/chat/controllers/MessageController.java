@@ -4,7 +4,6 @@ import com.mindup.chat.dtos.RequestMessageDto;
 import com.mindup.chat.dtos.ResponseEmergencyDto;
 import com.mindup.chat.dtos.ResponseOtherResourcesDto;
 import com.mindup.chat.dtos.TemporalChatDto;
-import com.mindup.chat.repositories.AvailablePsychologistsRepository;
 import com.mindup.chat.services.MessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 @RequiredArgsConstructor
 @RestController
@@ -27,8 +24,6 @@ public class MessageController {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
-    private final Queue<String> professionalQueue = new LinkedList<>();
-    private final AvailablePsychologistsRepository availablePsychologistsRepository;
 
 
     //Endpoint 1: Profesional fue cambiado a DISPONIBLE. Aquí lo agregamos a la tabla de availableProfessionals y enviamos mensaje genérico de ok (@payload).
@@ -42,6 +37,8 @@ public class MessageController {
     @GetMapping("/request-chat/{patientId}")
     public ResponseEntity<TemporalChatDto>requestChat(@PathVariable String patientId) throws IOException {
         TemporalChatDto temporalChatDto =messageService.requestChat(patientId);
+        messagingTemplate.convertAndSendToUser(temporalChatDto.professionalId(), "/queue/notifications/" + temporalChatDto.professionalId(),
+                "Una persona solicitó chat de emergencia. ¿Estás disponible para atenderla?");
         return ResponseEntity.ok(temporalChatDto);
     }
 
