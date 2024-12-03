@@ -71,6 +71,27 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
      
+# Verificar los secretos
+      - name: Verificar secretos
+        run: |
+          echo "SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}"
+          echo "EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }}"
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
+          echo "CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }}"
+          echo "CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }}"
+          echo "CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }}"
+          echo "CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }}"
+          echo "CORE_JWT_EXPIRATION_TIME=${{ secrets.CORE_JWT_EXPIRATION_TIME }}"
+          echo "MONGO_DB=${{ secrets.MONGO_DB }}"
+          echo "MONGO_USER=${{ secrets.MONGO_USER }}"
+          echo "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}"
+          echo "MONGO_HOST=${{ secrets.MONGO_HOST }}"
+          echo "GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }}"
+          echo "GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }}"
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"
+          echo "COMPOSE_HTTP_TIMEOUT=${{ secrets.COMPOSE_HTTP_TIMEOUT }}"
     
       - name: List files
         run: ls -la
