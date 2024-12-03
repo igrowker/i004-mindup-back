@@ -117,17 +117,17 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email, null, null);
+            return new ResponseLoginDto(null, email, null, null, null, null);
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email, null, user.getRole().toString());
+            return new ResponseLoginDto(user.getUserId(), email, user.getName(), null, null, user.getRole().toString());
         }
 
         String token = jwtService.generateToken(email, user.getUserId(), user.getRole().toString());
-        return new ResponseLoginDto(user.getUserId(), email, token, user.getRole().toString());
+        return new ResponseLoginDto(user.getUserId(), email, user.getName(), null, user.getRole().toString(), token);
     }
 
     @Override

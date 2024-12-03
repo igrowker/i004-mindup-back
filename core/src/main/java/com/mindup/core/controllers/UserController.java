@@ -62,13 +62,13 @@ public class UserController {
                 if (emailVerification != null && emailVerification.isVerified()) {
                     return ResponseEntity.ok(responseLoginDto);
                 } else {
-                    return ResponseEntity.status(403).body(new ResponseLoginDto(null, null, "Account not verified. Please verify your email first.", null));
+                    return ResponseEntity.status(403).body(new ResponseLoginDto(null, null, null, null, null, "Account not verified. Please verify your email first."));
                 }
             } else {
-                return ResponseEntity.status(404).body(new ResponseLoginDto(null, null, "User not found.", null));
+                return ResponseEntity.status(404).body(new ResponseLoginDto(null, null, null, null, null, "User not found."));
             }
         } else {
-            return ResponseEntity.status(401).body(new ResponseLoginDto(null, null, "Invalid credentials.", null));
+            return ResponseEntity.status(401).body(new ResponseLoginDto(null, null, null, null, null, "Invalid credentials."));
         }
     }
 
