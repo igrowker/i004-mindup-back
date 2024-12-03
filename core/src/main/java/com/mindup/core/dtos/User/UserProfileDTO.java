@@ -38,6 +38,8 @@ public class UserProfileDTO {
     private String specialty;
 
     private String information;
-    
+
     private String image;
+
+    private String video;
 }

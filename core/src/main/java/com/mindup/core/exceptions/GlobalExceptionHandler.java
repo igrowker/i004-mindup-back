@@ -101,18 +101,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleEmptyAppointmentsByStateException(EmptyAppointmentsByStateException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", "State without appointments");
-        response.put("message",ex.getMessage());
+        response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(EmptyAppointmentException.class)
-    public ResponseEntity<Map<String, String>> handleEmptyAppointmentException(EmptyAppointmentException ex ){
-        Map<String , String> response = new HashMap<>();
-        response.put("error","Empty appointments");
-        response.put("message",ex.getMessage());
+    public ResponseEntity<Map<String, String>> handleEmptyAppointmentException(EmptyAppointmentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Empty appointments");
+        response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-        
+
     @ExceptionHandler(InvalidNameException.class)
     public ResponseEntity<Map<String, String>> handleInvalidNameException(InvalidNameException ex) {
         Map<String, String> response = new HashMap<>();
@@ -169,5 +169,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(VideoValidationException.class)
+    public ResponseEntity<Map<String, String>> handleVideoValidationError(VideoValidationException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid Video URL");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
+    @ExceptionHandler(InvalidPreferencesException.class)
+    public ResponseEntity<String> handleInvalidPreferences(InvalidPreferencesException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

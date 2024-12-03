@@ -11,7 +11,7 @@ public interface UserService {
     UserDTO registerUser(UserRegisterDTO userRegisterDTO);
 
     Optional<UserDTO> findUserByEmail(String email);
-    
+
     Optional<UserProfileDTO> findUserById(String userId);
 
     void changePassword(String userId, String currentPassword, String newPassword);
@@ -21,7 +21,7 @@ public interface UserService {
     void updateUser(UserDTO userDTO);
 
     void deleteUserAccount(String email);
-    
+
     void updateProfileImage(String userId, ProfileImageDTO profileImageDTO);
 
     UserDTO toggleAvailability(String id) throws IOException;
@@ -39,4 +39,8 @@ public interface UserService {
     ResponseEntity<String> requestPasswordReset(String email);
 
     ResponseEntity<String> resetPassword(String token, String newPassword);
+
+    void updateProfileVideo(String userId, ProfileVideoDTO profileVideoDTO);
+
+    void deleteProfileVideo(String userId);
 }
