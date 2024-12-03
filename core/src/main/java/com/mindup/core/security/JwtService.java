@@ -44,11 +44,31 @@ public class JwtService {
     }
 
     public String extractUserId(String token) {
-        return extractClaim(token, claims -> claims.getOrDefault("userId", "").toString());
+        String userId = extractClaim(token, claims -> claims.getOrDefault("userId", "").toString());
+        if (userId == null || userId.isEmpty()) {
+            throw new SecurityException("Invalid token: does not contain a user ID.");
+        }
+        return userId;
     }
 
-    public long getExpirationTime() {
-        return jwtExpiration;
+    public boolean isTokenValid(String token, String email) {
+        final String extractedEmail = extractEmail(token);
+        return extractedEmail.equals(email) && !isTokenExpired(token);
+    }
+
+    public boolean isUserIdValid(String token, String urlUserId) {
+        String tokenUserId = extractUserId(token);
+        return tokenUserId.equals(urlUserId);
+    }
+
+    public boolean isRoleValid(String token, String[] validRoles) {
+        String tokenRole = extractRole(token);
+        for (String role : validRoles) {
+            if (role.equals(tokenRole)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String buildToken(
@@ -64,11 +84,6 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public boolean isTokenValid(String token, String email) {
-        final String extractedEmail = extractEmail(token);
-        return extractedEmail.equals(email) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

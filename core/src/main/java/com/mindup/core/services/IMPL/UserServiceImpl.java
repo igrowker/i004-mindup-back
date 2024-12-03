@@ -1,5 +1,6 @@
 package com.mindup.core.services.IMPL;
 
+import com.mindup.core.validations.VideoValidation;
 import com.mindup.core.entities.EmailVerification;
 import com.mindup.core.dtos.User.*;
 import com.mindup.core.entities.PasswordResetToken;
@@ -90,6 +91,7 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.PSYCHOLOGIST) {
             profileDTO.setTuition(user.getTuition());
             profileDTO.setSpecialty(user.getSpecialty());
+            profileDTO.setVideo(user.getVideo());
         }
         return profileDTO;
     }
@@ -115,17 +117,17 @@ public class UserServiceImpl implements UserService {
     public ResponseLoginDto authenticateUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
-            return new ResponseLoginDto(null, email, null, null);
+            return new ResponseLoginDto(null, email, null, null, null, null);
         }
 
         User user = userOptional.get();
         boolean isPasswordCorrect = passwordEncoder.matches(password, user.getPassword());
         if (!isPasswordCorrect) {
-            return new ResponseLoginDto(user.getUserId(), email, null, user.getRole().toString());
+            return new ResponseLoginDto(user.getUserId(), email, user.getName(), null, null, user.getRole().toString());
         }
 
         String token = jwtService.generateToken(email, user.getUserId(), user.getRole().toString());
-        return new ResponseLoginDto(user.getUserId(), email, token, user.getRole().toString());
+        return new ResponseLoginDto(user.getUserId(), email, user.getName(), null, user.getRole().toString(), token);
     }
 
     @Override
@@ -342,5 +344,34 @@ public class UserServiceImpl implements UserService {
         if (!expiredTokens.isEmpty()) {
             passwordResetTokenRepository.deleteAll(expiredTokens);
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileVideo(String userId, ProfileVideoDTO profileVideoDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
+        if (user.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can have a video.");
+        }
+
+        VideoValidation.validateVideo(profileVideoDTO.getVideo());
+        user.setVideo(profileVideoDTO.getVideo());
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProfileVideo(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with userId: " + userId));
+
+        if (user.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("Only users with role PSYCHOLOGIST can have a video.");
+        }
+
+        user.setVideo(null);
+        userRepository.save(user);
     }
 }
