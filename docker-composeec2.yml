@@ -67,6 +67,17 @@ services:
     depends_on:
       - eureka
     restart: always
+  mongo:
+    image: mongo:latest
+    container_name: mindup-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - mindup-network
+    volumes:
+      - mindup-mongo-data:/data/db
+    restart: always
+
 
 networks:
   mindup-network:
