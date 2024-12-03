@@ -74,7 +74,7 @@ jobs:
 # Verificar los secretos
       - name: Verificar secretos
         run: |
-          echo "SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}"
+          echo SPRING_PROFILES_ACTIVE: "${{ secrets.SPRING_PROFILES_ACTIVE }}"
           echo "EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }}"
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
           echo "CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }}"
