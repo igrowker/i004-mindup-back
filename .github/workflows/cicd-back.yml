@@ -70,7 +70,9 @@ jobs:
           EOF
 
 
-     
+      - name: Copy .env to EC2
+        run: |
+          scp -i $HOME/.ssh/id_rsa .env admin@${{ secrets.EC2_PUBLIC_IP }}:/home/admin/backend/.env
     
       - name: List files
         run: ls -la
