@@ -12,6 +12,7 @@ public class UserDTO {
     private String email;
     private Role role;
     private String preferences;
+    private String chosenPsychologist;
     private String profile;
     private Boolean availability;
 }
