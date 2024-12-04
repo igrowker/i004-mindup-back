@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
         profileDTO.setLocation(user.getLocation());
         profileDTO.setGender(user.getGender());
         profileDTO.setInformation(user.getInformation());
+        profileDTO.setChosenPsychologist(user.getChosenPsychologist());
         profileDTO.setImage(user.getImage());
 
         if (user.getRole() == Role.PSYCHOLOGIST) {
