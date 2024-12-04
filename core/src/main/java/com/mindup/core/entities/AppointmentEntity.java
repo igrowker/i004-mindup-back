@@ -24,7 +24,7 @@ public class AppointmentEntity {
     @JoinColumn(name = "psychologist_id",nullable = false)
     private User psychologist;
 
-    @Column(name = "appointment_date",nullable = false,columnDefinition = "DATE")
+    @Column(name = "appointment_date",nullable = false)
     private LocalDateTime date;
 
     private LocalDateTime softDelete;
