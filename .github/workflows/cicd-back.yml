@@ -68,12 +68,7 @@ jobs:
           GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }}
           GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }}
           EOF
-
-
-      - name: Copy .env to EC2
-        run: |
-          scp -i $HOME/.ssh/id_rsa .env admin@${{ secrets.EC2_PUBLIC_IP }}:/home/admin/backend/.env
-    
+  
       - name: List files
         run: ls -la
 
