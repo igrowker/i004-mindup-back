@@ -41,6 +41,8 @@ public class User {
     @Column
     private String preferences;
 
+    private String chosenPsychologist;
+
     @Column
     private String profile;
 

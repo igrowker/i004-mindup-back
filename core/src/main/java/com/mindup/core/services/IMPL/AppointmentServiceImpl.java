@@ -204,8 +204,12 @@ public class AppointmentServiceImpl implements IAppointmentService {
                 .date(requestDto.date())
                 .status(AppointmentStatus.PENDING)
                 .build();
-
+        
+        patient.setChosenPsychologist(psychologist.getUserId());
+        
+        User savedUser = userRepository.save(patient);
         AppointmentEntity savedAppointment = appointmentRepository.save(appointment);
+
         return appointmentMapper.appointmentToResponseCreateAppointmentDto(savedAppointment);
     }
 
