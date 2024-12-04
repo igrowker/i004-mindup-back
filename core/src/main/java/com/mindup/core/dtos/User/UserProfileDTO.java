@@ -39,6 +39,8 @@ public class UserProfileDTO {
 
     private String information;
 
+    private String chosenPsychologist;
+
     private String image;
 
     private String video;
