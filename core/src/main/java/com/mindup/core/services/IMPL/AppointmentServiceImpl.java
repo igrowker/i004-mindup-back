@@ -203,9 +203,6 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointment.setPatient(patient);
         appointment.setPsychologist(psychologist);
         appointment.setStatus(AppointmentStatus.PENDING);
-
-        System.out.println("Acaaaaaaaaaaaaaa" + appointmentStart);
-
         
         patient.setChosenPsychologist(psychologist.getUserId());
         
