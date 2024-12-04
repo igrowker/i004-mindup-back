@@ -197,13 +197,15 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
         }
 
-        // Scheduling an appointment
-        AppointmentEntity appointment = AppointmentEntity.builder()
-                .patient(patient)
-                .psychologist(psychologist)
-                .date(requestDto.date())
-                .status(AppointmentStatus.PENDING)
-                .build();
+        AppointmentEntity appointment = new AppointmentEntity();
+
+        appointment.setDate(appointmentStart);
+        appointment.setPatient(patient);
+        appointment.setPsychologist(psychologist);
+        appointment.setStatus(AppointmentStatus.PENDING);
+
+        System.out.println("Acaaaaaaaaaaaaaa" + appointmentStart);
+
         
         patient.setChosenPsychologist(psychologist.getUserId());
         
