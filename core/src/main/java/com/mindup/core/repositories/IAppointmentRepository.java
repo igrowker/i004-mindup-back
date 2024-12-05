@@ -24,11 +24,15 @@ public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,
 
         Set<AppointmentEntity> getAppointmentsByPsychologist(User psychologist);
 
-
         @Query("SELECT a.patient FROM AppointmentEntity a " +
-        "WHERE a.psychologist.userId = :psychologistId " +
-        "AND a.softDelete IS NULL")
+                        "WHERE a.psychologist.userId = :psychologistId " +
+                        "AND a.softDelete IS NULL")
         Set<User> findDistinctPatientsByPsychologistId(@Param("psychologistId") String psychologistId);
+
+        @Query("SELECT a FROM AppointmentEntity a " +
+                        "WHERE DATE(a.date) = :date " +
+                        "AND a.softDelete IS NULL")
+        Optional<Set<AppointmentEntity>> findAppointmentEntitiesByDay(@Param("date") LocalDate date);
 
         Optional<AppointmentEntity> findByDate(LocalDate appointmentDate);
 

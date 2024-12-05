@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import java.util.Set;
 
+import com.mindup.core.dtos.Appointment.RequestAppointmentsByDayDto;
 import com.mindup.core.dtos.Appointment.RequestCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.RequestUpdateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
@@ -21,6 +22,7 @@ public interface AppointmentMapper {
     Set<ResponseAppointmentDto> toResponseDtoSet(Set<AppointmentEntity> appointments);
     AppointmentEntity toEntity(RequestCreateAppointmentDto requestDto);
 
+    AppointmentEntity requestAppointmentsByDayDtoToAppointmentEntity (RequestAppointmentsByDayDto requestAppointmentsByDayDto);
 
     ResponseCreateAppointmentDto appointmentToResponseCreateAppointmentDto(AppointmentEntity appointmentEntity);
 

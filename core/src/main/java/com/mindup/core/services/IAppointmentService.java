@@ -12,6 +12,7 @@ public interface IAppointmentService {
     Set<ResponseAppointmentDto> getAppointmentsByPatient(String patientId);
     Set<ResponseAppointmentDto> getAppointmentsByPsychologist(String psychologistId);
     Set<ResponsePatientsDto> getPsychologistPatients(String id);
+    Set<ResponseAppointmentDateDto> getAppointmentsByDay(RequestAppointmentsByDayDto requestAppointmentsByDayDto);
     Set<ResponseAppointmentDto> getAppointmentsPending();
     Set<ResponseAppointmentDto> getAppointmentsAccepted();
     Set<ResponseAppointmentDto> getAppointmetsCanceled();

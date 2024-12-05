@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mindup.core.dtos.Appointment.RequestAppointmentsByDayDto;
 import com.mindup.core.dtos.Appointment.RequestCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.RequestUpdateAppointmentDto;
+import com.mindup.core.dtos.Appointment.ResponseAppointmentDateDto;
 import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseDeleteAppointmentDto;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/core/appointment")
@@ -30,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AppointmentController {
 
     private final IAppointmentService iAppointmentService;
-    
 
     // Buscar por tipo de usuario con reservas aceptadas
     @GetMapping("patient-reserved/{id}")
@@ -53,7 +55,14 @@ public class AppointmentController {
     public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPsychologist(id));
     }
-    
+
+    @PostMapping("/psychologist/appointment-date")
+    public ResponseEntity<Set<ResponseAppointmentDateDto>> getAppointmentsByDay(
+            @RequestBody RequestAppointmentsByDayDto requestAppointmentsByDayDto) {
+                Set<ResponseAppointmentDateDto> responseAppointmentDto = iAppointmentService.getAppointmentsByDay(requestAppointmentsByDayDto);
+        return ResponseEntity.ok(responseAppointmentDto);
+    }
+
     @GetMapping("/pysychologist-patients/{id}")
     public ResponseEntity<Set<ResponsePatientsDto>> getPsychologistPatients(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getPsychologistPatients(id));
@@ -74,7 +83,6 @@ public class AppointmentController {
     public ResponseEntity<Set<ResponseAppointmentDto>> getAppointmentCanceled() {
         return ResponseEntity.ok(iAppointmentService.getAppointmetsCanceled());
     }
-
 
     @PostMapping("/{id}/confirm")
     public ResponseEntity<ResponseAppointmentDto> aceptAppointment(@PathVariable String id) {
@@ -103,18 +111,17 @@ public class AppointmentController {
         return ResponseEntity.ok(responseAppointmentDto);
     }
 
-
     // this is an soft delete that can be reactivated
     @PostMapping("/{id}/deactivate")
     public ResponseEntity<ResponseDeleteAppointmentDto> deactivateAppointment(
-        @PathVariable String id) {
+            @PathVariable String id) {
         ResponseDeleteAppointmentDto response = iAppointmentService.delete(id);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/reactivate")
     public ResponseEntity<ResponseReactivateAppointmentDto> reactivateAppointment(
-        @PathVariable String id) {
+            @PathVariable String id) {
         ResponseReactivateAppointmentDto response = iAppointmentService.reactivateAppointment(id);
         return ResponseEntity.ok(response);
     }

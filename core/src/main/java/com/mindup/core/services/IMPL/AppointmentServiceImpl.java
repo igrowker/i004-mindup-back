@@ -124,23 +124,54 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (psychologistId == null || psychologistId.isBlank()) {
             throw new IllegalArgumentException("Psychologist ID must not be null or empty");
         }
-    
+
         // Obtener al psicólogo o lanzar excepción si no se encuentra
         User psychologist = userRepository.findById(psychologistId)
-            .orElseThrow(() -> new UserNotFoundException("Psychologist with ID " + psychologistId + " not found"));
-    
+                .orElseThrow(() -> new UserNotFoundException("Psychologist with ID " + psychologistId + " not found"));
+
         // Obtener pacientes únicos asociados al psicólogo
         Set<User> patients = appointmentRepository.findDistinctPatientsByPsychologistId(psychologist.getUserId());
-    
+
         // Mapear pacientes a DTOs
         return patients.stream()
-            .map(patient -> ResponsePatientsDto.builder()
-                .userId(patient.getUserId())
-                .name(patient.getName())
-                .email(patient.getEmail())
-                .build())
-            .collect(Collectors.toSet());
+                .map(patient -> ResponsePatientsDto.builder()
+                        .userId(patient.getUserId())
+                        .name(patient.getName())
+                        .email(patient.getEmail())
+                        .build())
+                .collect(Collectors.toSet());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<ResponseAppointmentDateDto> getAppointmentsByDay(RequestAppointmentsByDayDto requestAppointmentsByDayDto) {
+        // Verificar la existencia del psicólogo
+        userRepository.findById(requestAppointmentsByDayDto.psychologistId())
+                .orElseThrow(() -> new UserNotFoundException("No se encontró ningún psicólogo con ese ID"));
+    
+        // Obtener las citas del día
+        Set<AppointmentEntity> appointments = appointmentRepository.findAppointmentEntitiesByDay(requestAppointmentsByDayDto.date())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontraron citas en esa fecha"));
+
+        if (appointments.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron citas en esa fecha");
+        }
+    
+        // Mapear las citas a ResponseAppointmentDateDto
+        return appointments.stream()
+                .map(appointment -> new ResponseAppointmentDateDto(
+                        appointment.getId(),
+                        appointment.getPsychologist().getUserId(),
+                        appointment.getPsychologist().getName(),
+                        appointment.getPatient().getUserId(),
+                        appointment.getPatient().getName(),
+                        appointment.getStatus(),
+                        appointment.getDate()
+                ))
+                .collect(Collectors.toSet());
+
+    }
+    
 
     @Override
     public Set<ResponseAppointmentDto> getAppointmentsPending() {
