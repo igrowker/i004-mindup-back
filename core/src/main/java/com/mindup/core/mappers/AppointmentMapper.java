@@ -10,6 +10,7 @@ import com.mindup.core.dtos.Appointment.RequestUpdateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseDeleteAppointmentDto;
+import com.mindup.core.dtos.Appointment.ResponsePatientsDto;
 import com.mindup.core.dtos.Appointment.ResponseReactivateAppointmentDto;
 import com.mindup.core.entities.AppointmentEntity;
 
@@ -27,4 +28,6 @@ public interface AppointmentMapper {
     ResponseReactivateAppointmentDto appointmentToResponseReactivateAppointmentDto (AppointmentEntity appointmentEntity);
 
     void updateAppointmentFromDto(RequestUpdateAppointmentDto requestDto, @MappingTarget AppointmentEntity appointment);
+
+    ResponsePatientsDto appointmentToResponsePatientsDto (AppointmentEntity appointmentEntity);
 }

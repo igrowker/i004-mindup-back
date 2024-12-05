@@ -11,6 +11,7 @@ import com.mindup.core.dtos.Appointment.RequestUpdateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseCreateAppointmentDto;
 import com.mindup.core.dtos.Appointment.ResponseDeleteAppointmentDto;
+import com.mindup.core.dtos.Appointment.ResponsePatientsDto;
 import com.mindup.core.dtos.Appointment.ResponseReactivateAppointmentDto;
 import com.mindup.core.services.IAppointmentService;
 
@@ -52,6 +53,11 @@ public class AppointmentController {
     public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistAppointments(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPsychologist(id));
     }
+    
+    @GetMapping("/pysychologist-patients/{id}")
+    public ResponseEntity<Set<ResponsePatientsDto>> getPsychologistPatients(@PathVariable String id) {
+        return ResponseEntity.ok(iAppointmentService.getPsychologistPatients(id));
+    }
 
     // buscar por estados todos los appointmets (CANCELED, PENDING & ACCEPTED)
     @GetMapping("/pending")
@@ -68,6 +74,7 @@ public class AppointmentController {
     public ResponseEntity<Set<ResponseAppointmentDto>> getAppointmentCanceled() {
         return ResponseEntity.ok(iAppointmentService.getAppointmetsCanceled());
     }
+
 
     @PostMapping("/{id}/confirm")
     public ResponseEntity<ResponseAppointmentDto> aceptAppointment(@PathVariable String id) {

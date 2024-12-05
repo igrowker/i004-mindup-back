@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -115,6 +116,30 @@ public class AppointmentServiceImpl implements IAppointmentService {
             throw new EmptyAppointmentException("User appointments not found");
         }
         return appointmentMapper.toResponseDtoSet(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<ResponsePatientsDto> getPsychologistPatients(String psychologistId) {
+        // Validación de entrada
+        if (psychologistId == null || psychologistId.isBlank()) {
+            throw new IllegalArgumentException("Psychologist ID must not be null or empty");
+        }
+    
+        // Obtener al psicólogo o lanzar excepción si no se encuentra
+        User psychologist = userRepository.findById(psychologistId)
+            .orElseThrow(() -> new UserNotFoundException("Psychologist with ID " + psychologistId + " not found"));
+    
+        // Obtener pacientes únicos asociados al psicólogo
+        Set<User> patients = appointmentRepository.findDistinctPatientsByPsychologistId(psychologist.getUserId());
+    
+        // Mapear pacientes a DTOs
+        return patients.stream()
+            .map(patient -> ResponsePatientsDto.builder()
+                .userId(patient.getUserId())
+                .name(patient.getName())
+                .email(patient.getEmail())
+                .build())
+            .collect(Collectors.toSet());
     }
 
     @Override
