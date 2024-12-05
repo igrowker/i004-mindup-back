@@ -124,21 +124,34 @@ public class AppointmentServiceImpl implements IAppointmentService {
         if (psychologistId == null || psychologistId.isBlank()) {
             throw new IllegalArgumentException("Psychologist ID must not be null or empty");
         }
-
+    
         // Obtener al psicólogo o lanzar excepción si no se encuentra
         User psychologist = userRepository.findById(psychologistId)
                 .orElseThrow(() -> new UserNotFoundException("Psychologist with ID " + psychologistId + " not found"));
-
+    
+        // Validar que el usuario es un psicólogo
+        if (psychologist.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("User with ID " + psychologistId + " is not a psychologist");
+        }
+    
         // Obtener pacientes únicos asociados al psicólogo
         Set<User> patients = appointmentRepository.findDistinctPatientsByPsychologistId(psychologist.getUserId());
-
-        // Mapear pacientes a DTOs
+    
+        // Mapear pacientes a DTOs incluyendo la próxima cita
         return patients.stream()
-                .map(patient -> ResponsePatientsDto.builder()
-                        .userId(patient.getUserId())
-                        .name(patient.getName())
-                        .email(patient.getEmail())
-                        .build())
+                .map(patient -> {
+                    LocalDateTime nextAppointment = appointmentRepository
+                        .findNextAppointment(psychologistId, patient.getUserId())
+                        .map(AppointmentEntity::getDate)
+                        .orElse(null);
+    
+                    return ResponsePatientsDto.builder()
+                            .userId(patient.getUserId())
+                            .name(patient.getName())
+                            .email(patient.getEmail())
+                            .nextAppointment(nextAppointment)
+                            .build();
+                })
                 .collect(Collectors.toSet());
     }
 
