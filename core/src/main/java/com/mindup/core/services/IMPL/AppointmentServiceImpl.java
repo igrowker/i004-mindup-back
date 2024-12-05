@@ -177,8 +177,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
         LocalDateTime startOfDay = requestDto.date().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetween(
-                patient, startOfDay, endOfDay);
+        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetweenAndStatusNot(
+                patient, startOfDay, endOfDay, AppointmentStatus.CANCELED);
 
         if (patientAppointmentsCount > 0) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
@@ -190,8 +190,11 @@ public class AppointmentServiceImpl implements IAppointmentService {
         LocalDateTime bufferAfter = appointmentStart.plusMinutes(29);
 
         // Check if psychologist has any conflicting appointments
-        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetween(
-                psychologist, bufferBefore, bufferAfter);
+        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetweenAndStatusIn(
+                psychologist,
+                bufferBefore,
+                bufferAfter,
+                List.of(AppointmentStatus.PENDING, AppointmentStatus.ACCEPTED));
 
         if (hasConflictingAppointments) {
             throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
@@ -203,9 +206,9 @@ public class AppointmentServiceImpl implements IAppointmentService {
         appointment.setPatient(patient);
         appointment.setPsychologist(psychologist);
         appointment.setStatus(AppointmentStatus.PENDING);
-        
+
         patient.setChosenPsychologist(psychologist.getUserId());
-        
+
         User savedUser = userRepository.save(patient);
         AppointmentEntity savedAppointment = appointmentRepository.save(appointment);
 
@@ -249,44 +252,50 @@ public class AppointmentServiceImpl implements IAppointmentService {
         AppointmentEntity existingAppointment = appointmentRepository
                 .findById(requestUpdateAppointmentDto.id())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment doesn't exist"));
-    
+
         // Obtener los usuarios relacionados
         User patient = existingAppointment.getPatient();
         User psychologist = existingAppointment.getPsychologist();
-    
-        // Verificar si el paciente tiene otras citas en el mismo día
+
+        // Verificar si el paciente tiene otras citas en el mismo día (excluyendo
+        // canceladas)
         LocalDateTime startOfDay = requestUpdateAppointmentDto.date().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-    
-        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetween(
-                patient, startOfDay, endOfDay);
-    
+
+        long patientAppointmentsCount = appointmentRepository.countByPatientAndDateBetweenAndStatusNot(
+                patient, startOfDay, endOfDay, AppointmentStatus.CANCELED);
+
         // Excluir la cita actual de la validación
-        if (patientAppointmentsCount > 1 || 
-           (patientAppointmentsCount == 1 && !existingAppointment.getDate().toLocalDate().equals(requestUpdateAppointmentDto.date().toLocalDate()))) {
+        if (patientAppointmentsCount > 1 ||
+                (patientAppointmentsCount == 1 && !existingAppointment.getDate().toLocalDate()
+                        .equals(requestUpdateAppointmentDto.date().toLocalDate()))) {
             throw new AppointmentConflictException("Patient already has an appointment on this day");
         }
-    
+
         // Verificar solapamientos para el psicólogo
         LocalDateTime appointmentStart = requestUpdateAppointmentDto.date();
         LocalDateTime bufferBefore = appointmentStart.minusMinutes(29);
         LocalDateTime bufferAfter = appointmentStart.plusMinutes(29);
-    
-        boolean hasConflictingAppointments = appointmentRepository.existsByPsychologistAndDateBetweenAndIdNot(
-                psychologist, bufferBefore, bufferAfter, existingAppointment.getId());
-    
+
+        boolean hasConflictingAppointments = appointmentRepository
+                .existsByPsychologistAndDateBetweenAndStatusInAndIdNot(
+                        psychologist,
+                        bufferBefore,
+                        bufferAfter,
+                        List.of(AppointmentStatus.PENDING, AppointmentStatus.ACCEPTED),
+                        existingAppointment.getId());
+
         if (hasConflictingAppointments) {
             throw new AppointmentConflictException("Psychologist has conflicting appointments nearby");
         }
-    
+
         // Actualizar la cita
         existingAppointment.setDate(requestUpdateAppointmentDto.date());
         existingAppointment.setStatus(AppointmentStatus.PENDING);
         AppointmentEntity updatedAppointment = appointmentRepository.save(existingAppointment);
-    
+
         return appointmentMapper.toResponseDto(updatedAppointment);
     }
-    
 
     @Override
     public ResponseDeleteAppointmentDto delete(String id) {

@@ -2,11 +2,14 @@ package com.mindup.core.repositories;
 
 import com.mindup.core.entities.AppointmentEntity;
 import com.mindup.core.entities.User;
+import com.mindup.core.enums.AppointmentStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,4 +44,22 @@ public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,
         boolean existsByPsychologistAndDateBetweenAndIdNot(User psychologist, LocalDateTime start, LocalDateTime end,
                         String id);
 
+        boolean existsByPsychologistAndDateBetweenAndStatusIn(
+                        User psychologist,
+                        LocalDateTime start,
+                        LocalDateTime end,
+                        List<AppointmentStatus> statuses);
+
+        long countByPatientAndDateBetweenAndStatusNot(
+                        User patient,
+                        LocalDateTime startOfDay,
+                        LocalDateTime endOfDay,
+                        AppointmentStatus status);
+
+        boolean existsByPsychologistAndDateBetweenAndStatusInAndIdNot(
+                        User psychologist,
+                        LocalDateTime start,
+                        LocalDateTime end,
+                        List<AppointmentStatus> statuses,
+                        String excludedId);
 }
