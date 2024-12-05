@@ -1,10 +1,14 @@
 package com.mindup.core.repositories;
 
+import com.mindup.core.dtos.Appointment.ResponsePatientsDto;
 import com.mindup.core.entities.AppointmentEntity;
 import com.mindup.core.entities.User;
 import com.mindup.core.enums.AppointmentStatus;
 
+import feign.Param;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -19,6 +23,29 @@ public interface IAppointmentRepository extends JpaRepository<AppointmentEntity,
         Set<AppointmentEntity> getAppointmentsByPatient(User patient);
 
         Set<AppointmentEntity> getAppointmentsByPsychologist(User psychologist);
+
+        @Query("SELECT a.patient FROM AppointmentEntity a " +
+        "WHERE a.psychologist.userId = :psychologistId " +
+        "AND a.softDelete IS NULL")
+    Set<User> findDistinctPatientsByPsychologistId(@Param("psychologistId") String psychologistId);
+    
+    @Query("SELECT a FROM AppointmentEntity a " +
+        "WHERE a.psychologist.userId = :psychologistId " +
+        "AND a.patient.userId = :patientId " +
+        "AND a.date >= CURRENT_TIMESTAMP " +
+        "AND a.softDelete IS NULL " +
+        "AND a.status != 'CANCELLED' " +
+        "ORDER BY a.date ASC " +
+        "LIMIT 1")
+    Optional<AppointmentEntity> findNextAppointment(
+        @Param("psychologistId") String psychologistId,
+        @Param("patientId") String patientId
+    );
+
+        @Query("SELECT a FROM AppointmentEntity a " +
+                        "WHERE DATE(a.date) = :date " +
+                        "AND a.softDelete IS NULL")
+        Optional<Set<AppointmentEntity>> findAppointmentEntitiesByDay(@Param("date") LocalDate date);
 
         Optional<AppointmentEntity> findByDate(LocalDate appointmentDate);
 

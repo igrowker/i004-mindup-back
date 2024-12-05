@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -116,6 +117,74 @@ public class AppointmentServiceImpl implements IAppointmentService {
         }
         return appointmentMapper.toResponseDtoSet(appointments);
     }
+
+    @Transactional(readOnly = true)
+    public Set<ResponsePatientsDto> getPsychologistPatients(String psychologistId) {
+        // Validación de entrada
+        if (psychologistId == null || psychologistId.isBlank()) {
+            throw new IllegalArgumentException("Psychologist ID must not be null or empty");
+        }
+    
+        // Obtener al psicólogo o lanzar excepción si no se encuentra
+        User psychologist = userRepository.findById(psychologistId)
+                .orElseThrow(() -> new UserNotFoundException("Psychologist with ID " + psychologistId + " not found"));
+    
+        // Validar que el usuario es un psicólogo
+        if (psychologist.getRole() != Role.PSYCHOLOGIST) {
+            throw new IllegalArgumentException("User with ID " + psychologistId + " is not a psychologist");
+        }
+    
+        // Obtener pacientes únicos asociados al psicólogo
+        Set<User> patients = appointmentRepository.findDistinctPatientsByPsychologistId(psychologist.getUserId());
+    
+        // Mapear pacientes a DTOs incluyendo la próxima cita
+        return patients.stream()
+                .map(patient -> {
+                    LocalDateTime nextAppointment = appointmentRepository
+                        .findNextAppointment(psychologistId, patient.getUserId())
+                        .map(AppointmentEntity::getDate)
+                        .orElse(null);
+    
+                    return ResponsePatientsDto.builder()
+                            .userId(patient.getUserId())
+                            .name(patient.getName())
+                            .email(patient.getEmail())
+                            .nextAppointment(nextAppointment)
+                            .build();
+                })
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<ResponseAppointmentDateDto> getAppointmentsByDay(RequestAppointmentsByDayDto requestAppointmentsByDayDto) {
+        // Verificar la existencia del psicólogo
+        userRepository.findById(requestAppointmentsByDayDto.psychologistId())
+                .orElseThrow(() -> new UserNotFoundException("No se encontró ningún psicólogo con ese ID"));
+    
+        // Obtener las citas del día
+        Set<AppointmentEntity> appointments = appointmentRepository.findAppointmentEntitiesByDay(requestAppointmentsByDayDto.date())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontraron citas en esa fecha"));
+
+        if (appointments.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron citas en esa fecha");
+        }
+    
+        // Mapear las citas a ResponseAppointmentDateDto
+        return appointments.stream()
+                .map(appointment -> new ResponseAppointmentDateDto(
+                        appointment.getId(),
+                        appointment.getPsychologist().getUserId(),
+                        appointment.getPsychologist().getName(),
+                        appointment.getPatient().getUserId(),
+                        appointment.getPatient().getName(),
+                        appointment.getStatus(),
+                        appointment.getDate()
+                ))
+                .collect(Collectors.toSet());
+
+    }
+    
 
     @Override
     public Set<ResponseAppointmentDto> getAppointmentsPending() {
