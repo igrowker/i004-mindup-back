@@ -56,6 +56,7 @@ public class AppointmentController {
         return ResponseEntity.ok(iAppointmentService.getAppointmentsByPsychologist(id));
     }
 
+    // 
     @PostMapping("/psychologist/appointment-date")
     public ResponseEntity<Set<ResponseAppointmentDateDto>> getAppointmentsByDay(
             @RequestBody RequestAppointmentsByDayDto requestAppointmentsByDayDto) {
@@ -63,7 +64,8 @@ public class AppointmentController {
         return ResponseEntity.ok(responseAppointmentDto);
     }
 
-    @GetMapping("/pysychologist-patients/{id}")
+    // psychologist puede ver sus pacientes
+    @GetMapping("/psychologist-patients/{id}")
     public ResponseEntity<Set<ResponsePatientsDto>> getPsychologistPatients(@PathVariable String id) {
         return ResponseEntity.ok(iAppointmentService.getPsychologistPatients(id));
     }

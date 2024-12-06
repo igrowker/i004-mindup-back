@@ -9,7 +9,8 @@ public record ResponsePatientsDto(
     String userId,
     String name,
     String email,
-    LocalDateTime nextAppointment
+    LocalDateTime nextAppointment,
+    String image
 
 
 ) { }
