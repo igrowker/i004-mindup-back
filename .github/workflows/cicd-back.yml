@@ -3,8 +3,9 @@ name: Deploy Backend to Docker Hub and EC2
 on:
   push:
     branches:
-      - develop
-      - main
+       -features_dotenv
+     # - develop
+    #  - main
 
 jobs:
   build-and-push:
