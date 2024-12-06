@@ -12,7 +12,7 @@ services:
       - mindup-network
     restart: always
     volumes:
-      - ./work/.env:/app/.env  
+      - /_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
 
   chat:
     image: igrowker/i004-mindup-back-chat:latest  # Imagen desde Docker Hub
@@ -33,7 +33,7 @@ services:
       - eureka
     restart: always
     volumes:
-      - ./work/.env:/app/.env
+      - /_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
 
   core:
     image: igrowker/i004-mindup-back-core:latest  # Imagen desde Docker Hub
@@ -55,7 +55,7 @@ services:
       - eureka
     restart: always
     volumes:
-      - ./work/.env:/app/.env
+      - /_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
 
   gateway:
     image: igrowker/i004-mindup-back-gateway:latest  # Imagen desde Docker Hub
@@ -74,7 +74,7 @@ services:
       - eureka
     restart: always
     volumes:
-      - ./work/.env:/app/.env
+      - /_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
 
   mongo:
     image: mongo:latest
