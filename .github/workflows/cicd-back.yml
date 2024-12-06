@@ -1,7 +1,8 @@
 name: Deploy Backend to Docker Hub and EC2
 
 on:
-  push:
+  pull_request:
+    types: [closed] # Solo se activa cuando el PR se cierra (merge o cerrado manualmente)
     branches:
        -feature_dotenv
      # - develop
