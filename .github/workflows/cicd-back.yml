@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed] # Solo se activa cuando el PR se cierra (merge o cerrado manualmente)
     branches:
-       -feature_dotenv
+       -feature-dotenv
      # - develop
     #  - main
 
