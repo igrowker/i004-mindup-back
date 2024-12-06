@@ -83,6 +83,30 @@ public class AppointmentServiceImpl implements IAppointmentService {
         }
         return appointmentMapper.toResponseDtoSet(acceptedList);
     }
+
+    @Override
+    public Set<ResponseAppointmentDto> getPshychologistPendientAppointment(String id) {
+        // Cheking if patient exists
+        User psychologist = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Psychologist not found"));
+
+        // Checking psychologist role
+        if (psychologist.getRole() != Role.PSYCHOLOGIST)
+            throw new RoleMismatchException("User must be a psychologist");
+
+        List<AppointmentEntity> appointmentEntityList = appointmentRepository.findAll();
+        Set<AppointmentEntity> acceptedList = appointmentEntityList.stream()
+                .filter(appointmentEntity -> appointmentEntity.getStatus() == AppointmentStatus.PENDING &&
+                        appointmentEntity.getPsychologist().getUserId() == psychologist.getUserId() &&
+                        appointmentEntity.getSoftDelete() == null)
+                .collect(Collectors.toSet());
+
+        if (acceptedList.isEmpty()) {
+            throw new EmptyAppointmentException("User appointments not found");
+        }
+        return appointmentMapper.toResponseDtoSet(acceptedList);
+    }
+
     // #######################################################################/*
 
     @Override

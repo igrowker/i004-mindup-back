@@ -45,6 +45,11 @@ public class AppointmentController {
         return ResponseEntity.ok(iAppointmentService.getPshychologistReservedAppointment(id));
     }
 
+    @GetMapping("/psychologist-pending/{id}")
+    public ResponseEntity<Set<ResponseAppointmentDto>> getPsychologistPendientAppointments(@PathVariable String id) {
+        return ResponseEntity.ok(iAppointmentService.getPshychologistPendientAppointment(id));
+    }
+
     // Buscar por usuario todas las reservas
     @GetMapping("/patient/{id}")
     public ResponseEntity<Set<ResponseAppointmentDto>> getPatientAppointments(@PathVariable String id) {
