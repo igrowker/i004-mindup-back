@@ -14,7 +14,7 @@ public class CoreApplication {
 
     public static void main(String[] args) {
         // Cargar variables del .env
-        Dotenv dotenv = Dotenv.configure().directory("/core").load();
+        Dotenv dotenv = Dotenv.configure().directory("/app").load();
         dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
         SpringApplication.run(CoreApplication.class, args);
