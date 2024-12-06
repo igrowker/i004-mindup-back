@@ -118,6 +118,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         return appointmentMapper.toResponseDtoSet(appointments);
     }
 
+    // psychologist puede ver sus pacientes
     @Transactional(readOnly = true)
     public Set<ResponsePatientsDto> getPsychologistPatients(String psychologistId) {
         // Validación de entrada
@@ -150,6 +151,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
                             .name(patient.getName())
                             .email(patient.getEmail())
                             .nextAppointment(nextAppointment)
+                            .image(patient.getImage())
                             .build();
                 })
                 .collect(Collectors.toSet());
@@ -160,14 +162,16 @@ public class AppointmentServiceImpl implements IAppointmentService {
     public Set<ResponseAppointmentDateDto> getAppointmentsByDay(RequestAppointmentsByDayDto requestAppointmentsByDayDto) {
         // Verificar la existencia del psicólogo
         userRepository.findById(requestAppointmentsByDayDto.psychologistId())
-                .orElseThrow(() -> new UserNotFoundException("No se encontró ningún psicólogo con ese ID"));
+                .orElseThrow(() -> new ResourceNotFoundException("Not found any psychologist with that id"));
     
-        // Obtener las citas del día
-        Set<AppointmentEntity> appointments = appointmentRepository.findAppointmentEntitiesByDay(requestAppointmentsByDayDto.date())
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontraron citas en esa fecha"));
-
+        // Obtener las citas del día para el psicólogo especificado
+        Set<AppointmentEntity> appointments = appointmentRepository.findAppointmentEntitiesByDayAndPsychologistId(
+                        requestAppointmentsByDayDto.date(),
+                        requestAppointmentsByDayDto.psychologistId())
+                .orElseThrow(() -> new ResourceNotFoundException("Not found any appointment for the psychologist in that day"));
+    
         if (appointments.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron citas en esa fecha");
+            throw new ResourceNotFoundException("Not found any appointment for the psychologist in that day");
         }
     
         // Mapear las citas a ResponseAppointmentDateDto
@@ -182,8 +186,8 @@ public class AppointmentServiceImpl implements IAppointmentService {
                         appointment.getDate()
                 ))
                 .collect(Collectors.toSet());
-
     }
+    
     
 
     @Override
