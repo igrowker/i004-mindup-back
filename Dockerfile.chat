@@ -25,7 +25,7 @@ WORKDIR /app
 COPY --from=builder /app/chat/target/*.jar chat.jar
 
 # Copiar el archivo .env al contenedor
-#COPY .env /app/.env
+COPY .env /app/.env
 
 
 # Exponer los puertos necesarios
