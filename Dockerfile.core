@@ -26,7 +26,7 @@ COPY --from=builder /app/core/target/*.jar core.jar
 
 # Copiar el archivo .env al contenedor
 #COPY .env /app/.env
-
+RUN touch /app/.env
 
 # Exponer los puertos necesarios
 EXPOSE 8089
