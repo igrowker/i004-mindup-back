@@ -15,4 +15,6 @@ public class UserDTO {
     private String chosenPsychologist;
     private String profile;
     private Boolean availability;
+    private String image;
+    private String token;
 }
