@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(schema="mindupdbschema", name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {

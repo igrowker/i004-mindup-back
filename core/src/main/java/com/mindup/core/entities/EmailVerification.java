@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "email_verifications")
+@Table(schema="mindupdbschema", name = "email_verifications")
 public class EmailVerification {
 
     @Id

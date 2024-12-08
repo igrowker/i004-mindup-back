@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "password_reset_tokens")
+@Table(schema="mindupdbschema", name = "password_reset_tokens")
 public class PasswordResetToken {
 
     @Id
