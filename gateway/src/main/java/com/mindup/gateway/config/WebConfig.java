@@ -1,4 +1,4 @@
-package com.mindup.core.config;
+package com.mindup.gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
