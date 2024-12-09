@@ -1,4 +1,5 @@
 ![Logo de Mindup](https://github.com/igrowker/i004-mindup-back/blob/develop/core/src/main/resources/images/MindUpLogo.png?raw=true)
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/minup_marketing.jpeg?raw=true)
 
 ---
 
@@ -8,7 +9,7 @@
 
 El proyecto Mindup tiene un planteamiento sólido y detallado que aborda un problema real en la conexión entre pacientes y psicólogos, centrándose en personalización y humanización. A continuación, se destacan los elementos clave, las áreas de oportunidad y posibles recomendaciones para fortalecer la propuesta: 
 
-- Accede al repositorio FrontEnd: <a href="https://github.com/Galylilian/i004-mindup-front">
+- Accede al repositorio FrontEnd: <a href="https://github.com/igrowker/i004-mindup-front">
   <img src="https://img.icons8.com/?size=100&id=efFfwotdkiU5&format=png&color=000000" width="40" height="40"/>
 </a>
 
@@ -40,6 +41,12 @@ El proyecto Mindup tiene un planteamiento sólido y detallado que aborda un prob
   - Humanización: Perfiles detallados que incluyen videos y anécdotas, permitiendo una conexión emocional antes de la primera sesión.
   - Acceso inmediato: Chat de emergencia con profesionales disponibles, además de un número de contacto en caso de falta de disponibilidad.
   - Gestión integrada: Sincronización para facilitar la administración de citas.
+
+---
+## Galería de imágenes :framed_picture:
+
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/flow_paciente.jpg?raw=true)
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/flow_prof.jpg?raw=true)
 
 ---
 
@@ -78,6 +85,7 @@ Este proyecto está desarrollado utilizando las siguientes tecnologías:
   - React Query: Para el manejo eficiente de la sincronización de datos en la interfaz, realizando llamadas a APIs con un enfoque en el almacenamiento en caché y la gestión del estado.
   - Sonner: Librería para notificaciones ligeras y elegantes en aplicaciones web.
   - Zustand: Gestor de estado simple y sin dependencias para aplicaciones React, con un enfoque en la simplicidad y el rendimiento.
+  - Websocket: Utilizado para establecer los chats entre paciente y profesional
 
 **DevOps**
   - Git y GitHub: Para control de versiones y colaboración en equipo.
