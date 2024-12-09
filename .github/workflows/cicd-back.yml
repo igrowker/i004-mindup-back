@@ -1,0 +1,85 @@
+name: Deploy Backend to Docker Hub and EC2
+#
+on:
+  #push:
+  pull_request:
+    types: [closed]
+    branches:
+     - feature-dotenv
+      #- develop
+      #- main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build Docker images for backend services
+      - name: Build and Push Docker images for backend services
+        run: |
+          docker build -f Dockerfile.core -t igrowker/i004-mindup-back-core:${{ github.sha }} .
+          docker tag igrowker/i004-mindup-back-core:${{ github.sha }} igrowker/i004-mindup-back-core:latest
+          docker push igrowker/i004-mindup-back-core:${{ github.sha }}
+          docker push igrowker/i004-mindup-back-core:latest
+
+          docker build -f Dockerfile.chat -t igrowker/i004-mindup-back-chat:${{ github.sha }} .
+          docker tag igrowker/i004-mindup-back-chat:${{ github.sha }} igrowker/i004-mindup-back-chat:latest
+          docker push igrowker/i004-mindup-back-chat:${{ github.sha }}
+          docker push igrowker/i004-mindup-back-chat:latest
+
+          docker build -f Dockerfile.eureka -t igrowker/i004-mindup-back-eureka:${{ github.sha }} .
+          docker tag igrowker/i004-mindup-back-eureka:${{ github.sha }} igrowker/i004-mindup-back-eureka:latest
+          docker push igrowker/i004-mindup-back-eureka:${{ github.sha }}
+          docker push igrowker/i004-mindup-back-eureka:latest
+
+          docker build -f Dockerfile.gateway -t igrowker/i004-mindup-back-gateway:${{ github.sha }} .
+          docker tag igrowker/i004-mindup-back-gateway:${{ github.sha }} igrowker/i004-mindup-back-gateway:latest
+          docker push igrowker/i004-mindup-back-gateway:${{ github.sha }}
+          docker push igrowker/i004-mindup-back-gateway:latest
+
+  deploy-to-ec2:
+    needs: build-and-push
+    runs-on: [self-hosted, backend-deploy]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Convert GitHub Secrets to .env file
+        run: |
+          cat <<EOF > .env
+          SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }}
+          EUREKA_HOSTNAME=${{ secrets.EUREKA_HOSTNAME }}
+          MONGO_DB=${{ secrets.MONGO_DB }}
+          MONGO_USER=${{ secrets.MONGO_USER }}
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          MONGO_HOST=${{ secrets.MONGO_HOST }}
+          CORE_JWT_EXPIRATION_TIME=${{ secrets.CORE_JWT_EXPIRATION_TIME }}
+          CORE_JWT_SECRET_KEY=${{ secrets.CORE_JWT_SECRET_KEY }}
+          CORE_BBDD_URL=${{ secrets.CORE_BBDD_URL }}
+          CORE_DB_USERNAME=${{ secrets.CORE_DB_USERNAME }}
+          CORE_DB_PASSWORD=${{ secrets.CORE_DB_PASSWORD }}
+          GATEWAY_JWT_SECRET_KEY=${{ secrets.GATEWAY_JWT_SECRET_KEY }}
+          GATEWAY_JWT_EXPIRATION=${{ secrets.GATEWAY_JWT_EXPIRATION }}
+          EOF
+  
+      - name: List files
+        run: ls -la
+
+
+      - name: Deploy Backend on EC2 with Docker Compose
+        run: |
+          # Ejecutar Docker Compose pasando las variables de entorno directamente
+          sudo docker-compose -f docker-composeec2.yml down && \
+          sudo docker system prune -f && \
+          sudo docker-compose --env-file .env -f docker-composeec2.yml pull && \
+          sudo docker-compose --env-file .env -f docker-composeec2.yml up -d

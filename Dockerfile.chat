@@ -1,0 +1,39 @@
+# Etapa 1: Construcción de la aplicación con Maven
+FROM maven:3.8.8-eclipse-temurin-17 AS builder
+
+WORKDIR /app
+# Montar el repositorio de Maven local en el contenedor para evitar múltiples descargas
+VOLUME ["/root/.m2"]
+
+# Copiar el archivo pom.xml y los poms de los módulos que quieres construir
+COPY . /app 
+
+# Descargar dependencias sin hacer compilación
+RUN mvn dependency:go-offline
+
+
+# Construir los módulos sin ejecutar tests
+#RUN mvn clean package -DskipTests
+RUN mvn clean install -DskipTests -X -pl chat
+ 
+# Etapa 2: Preparación de la imagen de producción
+FROM openjdk:17-jdk-slim AS runner
+
+WORKDIR /app
+
+# Copiar los archivos .jar de cada servicio desde el builder
+COPY --from=builder /app/chat/target/*.jar chat.jar
+
+# Copiar el archivo .env al contenedor
+#COPY .env /app/.env
+
+
+# Exponer los puertos necesarios
+EXPOSE 8088
+
+# Limpieza de artefactos de construcción
+RUN rm -rf /root/.m2
+
+# Comando para iniciar todos los servicios en paralelo
+CMD ["sh", "-c", " java -jar chat.jar & wait"]
+

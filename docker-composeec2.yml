@@ -1,0 +1,96 @@
+services:
+  eureka:
+    image: igrowker/i004-mindup-back-eureka:latest  # Imagen desde Docker Hub
+    container_name: mindup-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8761
+      - EUREKA_HOSTNAME=${EUREKA_HOSTNAME}
+    networks:
+      - mindup-network
+    restart: always
+    volumes:
+      - /home/admin/actions-runner/_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
+     
+  chat:
+    image: igrowker/i004-mindup-back-chat:latest  # Imagen desde Docker Hub
+    container_name: mindup-chat
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8088
+      - EUREKA_HOSTNAME=${EUREKA_HOSTNAME}
+      - MONGO_DB=${MONGO_DB}
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_HOST=${MONGO_HOST}
+    networks:
+      - mindup-network
+    depends_on:
+      - eureka
+    restart: always
+    volumes:
+      - /home/admin/actions-runner/_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
+
+  core:
+    image: igrowker/i004-mindup-back-core:latest  # Imagen desde Docker Hub
+    container_name: mindup-core
+    ports:
+      - "8089:8089"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SERVER_PORT=8089
+      - EUREKA_HOSTNAME=${EUREKA_HOSTNAME}
+      - CORE_JWT_EXPIRATION_TIME=${CORE_JWT_EXPIRATION_TIME}
+      - CORE_JWT_SECRET_KEY=${CORE_JWT_SECRET_KEY}
+      - CORE_BBDD_URL=${CORE_BBDD_URL}
+      - CORE_DB_USERNAME=${CORE_DB_USERNAME}
+      - CORE_DB_PASSWORD=${CORE_DB_PASSWORD}
+    networks:
+      - mindup-network
+    depends_on:
+      - eureka
+    restart: always
+    volumes:
+      - /home/admin/actions-runner/_work/i004-mindup-back/i004-mindup-back/.env:/app/.envv
+
+  gateway:
+    image: igrowker/i004-mindup-back-gateway:latest  # Imagen desde Docker Hub
+    container_name: mindup-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - EUREKA_HOSTNAME=${EUREKA_HOSTNAME}
+      - SERVER_PORT=8090
+      - GATEWAY_JWT_SECRET_KEY=${GATEWAY_JWT_SECRET_KEY}
+      - GATEWAY_JWT_EXPIRATION=${GATEWAY_JWT_EXPIRATION}
+    networks:
+      - mindup-network
+    depends_on:
+      - eureka
+    restart: always
+    volumes:
+      - /home/admin/actions-runner/_work/i004-mindup-back/i004-mindup-back/.env:/app/.env
+
+  mongo:
+    image: mongo:latest
+    container_name: mindup-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - mindup-network
+    volumes:
+      - mindup-mongo-data:/data/db
+    restart: always
+
+
+networks:
+  mindup-network:
+    driver: bridge
+volumes:
+  mindup-mongo-data:
+    driver: local
