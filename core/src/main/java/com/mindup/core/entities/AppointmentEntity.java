@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
 @Builder
-@Table(name = "appointments")
+@Table(schema="mindupdbschema", name = "appointments")
 public class AppointmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

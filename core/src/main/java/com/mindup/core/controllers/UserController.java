@@ -47,18 +47,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseLoginDto> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
+    public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
         UserDTO userDTO = userService.registerUser(userRegisterDTO);
-        String token = jwtService.generateToken(userDTO.getEmail(), userDTO.getUserId(), userDTO.getName(), userDTO.getImage(), userDTO.getRole().toString());
-        ResponseLoginDto response = new ResponseLoginDto(
-                userDTO.getUserId(),
-                userDTO.getEmail(),
-                userDTO.getName(),
-                userDTO.getImage(),
-                userDTO.getRole().toString(),
-                token
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/login")
