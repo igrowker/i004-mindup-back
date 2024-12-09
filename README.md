@@ -1,5 +1,5 @@
 ![Logo de Mindup](https://github.com/igrowker/i004-mindup-back/blob/develop/core/src/main/resources/images/MindUpLogo.png?raw=true)
-![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/minup_marketing.jpeg?raw=true)
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/develop/public/minup_marketing.jpeg)
 
 ---
 
@@ -45,8 +45,8 @@ El proyecto Mindup tiene un planteamiento sólido y detallado que aborda un prob
 ---
 ## Galería de imágenes :framed_picture:
 
-![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/flow_paciente.jpg?raw=true)
-![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/kn-readme/public/flow_prof.jpg?raw=true)
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/develop/public/flow_paciente.jpg)
+![Mindup marketing](https://github.com/igrowker/i004-mindup-front/blob/develop/public/flow_prof.jpg)
 
 ---
 
